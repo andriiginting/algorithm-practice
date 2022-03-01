@@ -1,11 +1,73 @@
 import java.util.*
 import javax.swing.text.html.HTML.Attribute.N
+import kotlin.Comparator
 import kotlin.math.min
 
 
 fun main() {
-    val result = missingElement(intArrayOf(4,7,9,10), 3)
-    println(result)
+    val result = "abbaca"
+}
+
+fun closestValue(root: TreeNode?, target: Double): Int {
+    val list = mutableListOf<Int>()
+    var target = 0
+    helper(root, list)
+
+    return Collections.min(list, Comparator<Int> { o1, o2 ->
+        return@Comparator if (Math.abs(o1 - target) < Math.abs(o2 - target)) {
+             -1
+        } else {
+            1
+        }
+    })
+}
+
+private fun helper(root: TreeNode?, list: MutableList<Int>) {
+    if(root == null) {
+        return
+    }
+
+    helper(root?.left, list)
+    list.add(root.`val`)
+    helper(root?.right, list)
+}
+
+fun removeDuplicates(s: String): String {
+    val builder = StringBuilder()
+    val deque = ArrayDeque<Char>()
+
+    //input = abbaca
+    //stack = ab
+
+    for(char in s) {
+        if(char == deque.peek()) {
+            deque.pop()
+        } else {
+            deque.push(char)
+        }
+
+    }
+
+    for(char in deque) {
+        builder.append(char)
+    }
+
+    return builder.toString()
+}
+
+fun isValidSubsequence(array: List<Int>, sequence: List<Int>): Boolean {
+    if (array.containsAll(sequence)) {
+        return false
+    }
+
+
+    sequence.forEach {
+        if (!array.contains(it)) {
+            return false
+        }
+    }
+
+    return true
 }
 
 //zalando codility
