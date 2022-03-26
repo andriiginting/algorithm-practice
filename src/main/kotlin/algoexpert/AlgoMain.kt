@@ -4,8 +4,37 @@ import java.util.*
 
 fun main() {
     println(
-
+        underscorifySubstring("testthis is a testtest to see if testestest it works", "test")
     )
+}
+
+fun underscorifySubstring(string: String, substring: String): String {
+    return string.replace(substring, "_${substring}_")
+}
+
+fun permutations(array: List<String>): MutableList<List<String>> {
+    val perm = mutableListOf<List<String>>()
+    permutationHelper(0, array.toMutableList(), perm)
+    return perm
+}
+
+private fun permutationHelper(idx: Int, array: MutableList<String>, permutation: MutableList<List<String>>) {
+    if(idx == array.size - 1) {
+        permutation.add(array.toList())
+        return
+    }
+
+    for (j in idx until array.size){
+        permSwap(array, idx, j)
+        permutationHelper(idx+1, array, permutation)
+        permSwap(array, idx, j)
+    }
+}
+
+private fun permSwap(array: MutableList<String>, i: Int, j:Int) {
+    val temp = array[i]
+    array[i] = array[j]
+    array[j] = temp
 }
 
 fun balancedBrackets(str: String): Boolean {
