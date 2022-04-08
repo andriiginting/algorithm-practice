@@ -1,15 +1,259 @@
 import java.util.*
 import kotlin.Comparator
-import kotlin.math.max
-import kotlin.math.min
 
 
 fun main() {
-    val result = deliManipulation("Returns       a new string")
+    val result = convertListToInt(intArrayOf(1,2,3,4))
     println(result)
 }
 
+fun findMissingRanges(nums: IntArray, lower: Int, upper: Int): List<String> {
+    val result = mutableListOf<String>()
+    val list = mutableListOf<Int>()
 
+    for (i in lower until upper) {
+        list.add(i)
+    }
+
+    for (i in 0 until nums.size) {
+//        if (nums[i + 1] - nums[i] > 2) {
+//            val lowerRange = nums[i] + 1
+//            val topRange = nums[i + 1] - 1
+//
+//            if (lowerRange == topRange) {
+//                result.add("$lowerRange")
+//            } else {
+//                result.add("$lowerRange->$topRange")
+//            }
+//        }
+
+    }
+
+    return result
+}
+
+fun matrixBlockSum(mat: Array<IntArray>, k: Int): Array<IntArray> {
+    val result = mutableListOf<Int>()
+
+    for (block in mat) {
+
+    }
+
+    return arrayOf(result.toIntArray())
+}
+
+fun addToArrayForm(num: IntArray, k: Int): List<Int> {
+    val result = mutableListOf<Int>()
+    val convertedNumber = convertListToInt(num) + k
+    return result.toList()
+}
+
+private fun convertIntToList(number: Int, result: MutableList<Int>) {
+    val numberInString = "$number"
+    numberInString.forEach {
+        result.add(Integer.parseInt(it.toString()))
+    }
+}
+
+private fun convertListToInt(nums: IntArray): Int {
+    val size = nums.size - 1
+    var result = 0
+    var multiply = Math.pow(10 * 1.0, size * 1.0).toInt()
+
+    for(number in nums) {
+        val current = number * multiply
+        result += current
+        multiply /= 10
+    }
+
+    var numberInString = ""
+    nums.forEach {
+        numberInString += it
+    }
+    return numberInString.toBigInteger().toInt()
+}
+
+fun arrayRankTransform(arr: IntArray): IntArray {
+    val tranform = arr.toMutableSet().sorted()
+    val result = mutableListOf<Int>()
+
+    for (i in 0 until arr.size) {
+        val idx = tranform.indexOf(arr[i]) + 1
+        result.add(idx)
+    }
+
+    return result.toIntArray()
+}
+
+fun findPeakElement(nums: IntArray): Int {
+    val peekNumber = nums.max() ?: 0
+    return nums.indexOf(peekNumber)
+}
+
+fun findRestaurant(list1: Array<String>, list2: Array<String>): Array<String> {
+    val result = mutableSetOf<String>()
+
+    for (i in 0 until list1.size) {
+        if (list2.contains(list1[i])) {
+            result.add(list1[i])
+        }
+    }
+
+    return result.toTypedArray()
+}
+
+fun restoreString(s: String, indices: IntArray): String {
+    val map = mutableMapOf<Int, Char>()
+    val builder = StringBuilder()
+
+    for(i in 0 until s.length) {
+        val idx = indices[i]
+        map[idx] = s[i]
+    }
+
+    //c o d e l e e t
+    //0 1 2 3 4 5 6 7
+    //4,5,6,7,0,2,1,3
+    //leetc
+
+    for (i in 0 until map.size) {
+        builder.append(map[i])
+    }
+
+    return builder.toString()
+}
+
+fun exist(board: Array<CharArray>, word: String): Boolean {
+    var occurance = word
+    var idx = 0
+
+    board.forEach { row ->
+        for(letter in row) {
+            if(letter == occurance[idx]) {
+                idx++
+                occurance = occurance.substring(idx, occurance.length)
+            }
+        }
+    }
+
+    return occurance.isEmpty()
+}
+
+fun reverseString(s: CharArray): Unit {
+    var idx = 0
+    s.reverse()
+    for (i in s.size - 1 downTo 0) {
+
+    }
+    s.reverse()
+}
+
+fun wordPattern(pattern: String, s: String): Boolean {
+    val word = s.split(" ").toMutableSet()
+    val wordCount = s.split(" ")
+    val patternMap = mutableMapOf<Char, Int>()
+
+    if(pattern.length != wordCount.size) {
+        return false
+    }
+
+    for(code in pattern) {
+        patternMap[code] = patternMap.getOrDefault(code, 0) + 1
+    }
+
+    return patternMap.keys.size == word.size
+}
+
+fun countAndSay(n: Int): String {
+    val mapWord = mutableMapOf<Int, String>(
+        1 to "one",
+        2 to "two",
+        3 to "three",
+        4 to "four",
+        5 to "five",
+        6 to "six",
+        7 to "seven",
+        8 to "eight",
+        9 to "nine"
+    )
+
+    return "1"
+}
+
+fun numTilePossibilities(tiles: String): Int {
+    if (tiles.length < 2) {
+        return tiles.length
+    }
+    return 0
+}
+
+fun nextGreaterElement(nums1: IntArray, nums2: IntArray): IntArray {
+    val list = mutableListOf<Int>()
+
+    for(i in 0 until nums1.size) {
+        if(nums1[i] in nums2) {
+            val idx = nums2.indexOf(nums1[i])
+            val maxSize = nums2.size - 1
+
+            if(maxSize == idx) {
+                list.add(-1)
+            } else {
+                list.add(
+                    nextGreater(nums2, idx)
+                )
+            }
+        }
+    }
+
+    return list.toIntArray()
+}
+
+private fun nextGreater(nums: IntArray, idx: Int): Int {
+    for (i in idx until nums.size) {
+        if (nums[idx] < nums[i]){
+            return nums[i]
+        }
+    }
+
+    return -1
+}
+
+fun arraysIntersection(arr1: IntArray, arr2: IntArray, arr3: IntArray): List<Int> {
+    val seen = arr1.intersect(arr2.asIterable()).intersect(arr3.asIterable())
+
+    return seen.toList()
+}
+
+fun countCharacters(words: Array<String>, chars: String): Int {
+    var count = 0
+    for (word in words) {
+        if (isValidChar(chars, word)) {
+            count += word.length
+        }
+    }
+    return count
+}
+
+private fun isValidChar(chars: String, word: String): Boolean {
+    for (char in word) {
+        if (char !in chars) {
+            return false
+        }
+    }
+
+    return true
+}
+
+fun alertNames(keyName: Array<String>, keyTime: Array<String>): List<String> {
+    val map = mutableMapOf<String, MutableList<Int>>()
+    val list = mutableListOf<String>()
+
+    for (i in 0 until keyName.size) {
+
+    }
+
+    return list.toList()
+}
 
 fun customSortString(order: String, s: String): String {
     val mapChar = mutableMapOf<Char, Int>()
@@ -243,7 +487,6 @@ private fun helper(root: TreeNode?, list: MutableList<Int>) {
 fun removeDuplicates(s: String): String {
     val builder = StringBuilder()
     val deque = ArrayDeque<Char>()
-
     //input = abbaca
     //stack = ab
 
@@ -485,23 +728,6 @@ fun canConstruct(ransomNote: String, magazine: String): Boolean {
     }
 
     return true
-}
-
-fun restoreString(s: String, indices: IntArray): String {
-
-    val map = mutableMapOf<Char, Int>()
-    val list = mutableListOf<Pair<Char, Int>>()
-    val builder = StringBuilder()
-    for (i in 0 until s.length) {
-        list.add(s[i] to indices[i])
-    }
-
-    list.sortBy { it.second }
-    list.forEach {
-        builder.append(it.first)
-    }
-
-    return builder.toString()
 }
 
 fun findDisappearedNumbers(nums: IntArray): List<Int> {
@@ -756,25 +982,6 @@ fun shortestDistance(wordsDict: Array<String>, word1: String, word2: String): In
         secondIdx - firstIdx
     }
 
-}
-
-fun findMissingRanges(nums: IntArray, lower: Int, upper: Int): List<String> {
-    val result = mutableListOf<String>()
-    nums.plus(upper)
-    for (i in 0 until nums.size) {
-        if (nums[i + 1] - nums[i] > 2) {
-            val lowerRange = nums[i] + 1
-            val topRange = nums[i + 1] - 1
-
-            if (lowerRange == topRange) {
-                result.add("$lowerRange")
-            } else {
-                result.add("$lowerRange->$topRange")
-            }
-        }
-    }
-
-    return result
 }
 
 fun topKFrequent(words: Array<String>, k: Int): List<String> {
@@ -1503,26 +1710,6 @@ fun canConvert(str1: String, str2: String): Boolean {
     return false
 }
 
-fun exist(board: Array<CharArray>, word: String): Boolean {
-    /*
-    | A | B | C | E |
-    | S | F | C | S |
-    | A | D | E | E |
-
-    Input: board = [
-    ["A","B","C","E"],
-    ["S","F","C","S"],
-    ["A","D","E","E"]
-    ], word = "SEE"
-    Output: true
-     */
-    val seenWord = mutableListOf<Char>()
-    board.forEach { row ->
-
-    }
-    return false
-}
-
 fun singleNumber(nums: IntArray): Int {
     val map = mutableMapOf<Int, Int>()
 
@@ -1982,13 +2169,6 @@ data class Restaurant(
     val price: Int,
     val distance: Int
 )
-
-fun addToArrayForm(num: IntArray, k: Int): List<Int> {
-    val sum = mutableListOf<Int>()
-
-    val result = num.joinToString("").toInt() + k
-    return sum
-}
 
 fun fizzBuzz(n: Int): List<String> {
     val minstack = ArrayDeque<Int>()
