@@ -1,6 +1,7 @@
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class FoobarChallenge {
@@ -9,8 +10,10 @@ public class FoobarChallenge {
         int[] y = new int[]{5, 2, 5, 13};
         int[] result = stationCodedMsg(x, 12);
 
-        int msg = enrouteSaluteV2("<<>><");
-        System.out.println(msg);
+        String[] msg = elevatorMaintenance(new String[]{"1.1.2", "1.0", "1.3.3", "1.0.12", "1.0.2"});
+        for (String value : msg) {
+            System.out.println(value);
+        }
     }
 
     public static int solution(int[] x, int[] y) {
@@ -126,14 +129,121 @@ Output:
         int toRight = 0;
         String str[] = s.split("");
 
-        for(String salute: str) {
-            if(salute.equalsIgnoreCase(">")) {
+        for (String salute : str) {
+            if (salute.equalsIgnoreCase(">")) {
                 toRight++;
             } else if (salute.equalsIgnoreCase("<")) {
                 result += toRight;
             }
         }
 
-        return result* 2;
+        return result * 2;
+    }
+
+    /*
+    Elevator Maintenance
+====================
+
+You've been assigned the onerous task of elevator maintenance -- ugh! It wouldn't be so bad, except that all the elevator documentation has been lying in a disorganized pile at the bottom of a filing cabinet for years, and you don't even know what elevator version numbers you'll be working on.
+
+Elevator versions are represented by a series of numbers, divided up into major, minor and revision integers. New versions of an elevator increase the major number, e.g. 1, 2, 3, and so on. When new features are added to an elevator without being a complete new version, a second number named "minor" can be used to represent those new additions, e.g. 1.0, 1.1, 1.2, etc. Small fixes or maintenance work can be represented by a third number named "revision", e.g. 1.1.1, 1.1.2, 1.2.0, and so on. The number zero can be used as a major for pre-release versions of elevators, e.g. 0.1, 0.5, 0.9.2, etc (Commander Lambda is careful to always beta test her new technology, with her loyal henchmen as subjects!).
+
+Given a list of elevator versions represented as strings, write a function solution(l) that returns the same list sorted in ascending order by major, minor, and revision number so that you can identify the current elevator version. The versions in list l will always contain major numbers, but minor and revision numbers are optional. If the version contains a revision number, then it will also have a minor number.
+
+For example, given the list l as ["1.1.2", "1.0", "1.3.3", "1.0.12", "1.0.2"], the function solution(l) would return the list ["1.0", "1.0.2", "1.0.12", "1.1.2", "1.3.3"]. If two or more versions are equivalent but one version contains more numbers than the others, then these versions must be sorted ascending based on how many numbers they have, e.g ["1", "1.0", "1.0.0"]. The number of elements in the list l will be at least 1 and will not exceed 100.
+
+Languages
+=========
+
+To provide a Python solution, edit solution.py
+To provide a Java solution, edit Solution.java
+
+Test cases
+==========
+Your code should pass the following test cases.
+Note that it may also be run against hidden test cases not shown here.
+
+-- Python cases --
+Input:
+solution.solution(["1.11", "2.0.0", "1.2", "2", "0.1", "1.2.1", "1.1.1", "2.0"])
+Output:
+    0.1,1.1.1,1.2,1.2.1,1.11,2,2.0,2.0.0
+
+Input:
+solution.solution(["1.1.2", "1.0", "1.3.3", "1.0.12", "1.0.2"])
+Output:
+    1.0,1.0.2,1.0.12,1.1.2,1.3.3
+
+-- Java cases --
+Input:
+Solution.solution({"1.11", "2.0.0", "1.2", "2", "0.1", "1.2.1", "1.1.1", "2.0"})
+Output:
+    0.1,1.1.1,1.2,1.2.1,1.11,2,2.0,2.0.0
+
+Input:
+Solution.solution({"1.1.2", "1.0", "1.3.3", "1.0.12", "1.0.2"})
+Output:
+    1.0,1.0.2,1.0.12,1.1.2,1.3.3
+     */
+
+    @NotNull
+    public static String[] elevationMantain(String[] l) {
+        List<String[]> list = new ArrayList<>();
+
+        for (String version : l) {
+            String[] rawVersion = version.split("\\.");
+            list.add(rawVersion);
+        }
+
+        list.sort((first, second) -> {
+                    int idx = 0;
+                    while (idx < Math.min(first.length, second.length)) {
+                        int parse = Integer.compare(
+                                Integer.parseInt(first[idx]),
+                                Integer.parseInt(second[idx])
+                        );
+
+                        if (parse != 0) {
+                            return parse;
+                        }
+                        idx++;
+                    }
+                    return Integer.compare(first.length, second.length);
+                }
+        );
+
+        return list.stream()
+                .map(strings -> String.join(".", strings))
+                .toArray(String[]::new);
+    }
+
+    public static String[] elevatorMaintenance(String[] l) {
+        Comparator<String> comparator = (o1, o2) -> {
+            String[] first = o1.split("\\.");
+            String[] second = o2.split("\\.");
+
+            int parse = Integer.parseInt(first[0]) - Integer.parseInt(second[0]);
+
+            if (parse != 0) {
+                return parse;
+            }
+
+            if (first.length == 1 || second.length == 1) {
+                return first.length - second.length;
+            }
+
+            int minorVersion = Integer.parseInt(first[1]) - Integer.parseInt(second[1]);
+            if (minorVersion != 0) {
+                return minorVersion;
+            }
+
+            if (first.length == 2 || second.length == 2) {
+                return first.length - second.length;
+            }
+
+            return Integer.parseInt(first[2]) - Integer.parseInt(second[2]);
+        };
+        Arrays.sort(l, comparator);
+        return l;
     }
 }
