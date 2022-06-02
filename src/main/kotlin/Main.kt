@@ -1,10 +1,303 @@
+import leetcode.isDuplicateInSubBox
 import java.util.*
-import kotlin.Comparator
 
 
 fun main() {
-    val result = convertListToInt(intArrayOf(1,2,3,4))
+    val result = globMatching("abcdefg", "abc?e?g")
     println(result)
+}
+
+fun isLongPressedName(name: String, typed: String): Boolean {
+    var counter = name.length
+    val builder = StringBuilder(typed)
+
+    for (i in 0 until name.length) {
+        if (typed.contains(name[i])) {
+            val idx = builder.indexOf(name[i])
+            if (idx != -1) {
+                builder.deleteCharAt(idx)
+                counter--
+            }
+        }
+    }
+
+    return counter == 0
+}
+
+fun firstMissingPositive(nums: IntArray): Int {
+    nums.sorted()
+    val missingSet = mutableSetOf<Int>()
+
+    for(i in 0 until nums.size) {
+        missingSet.add(nums[i])
+    }
+
+
+
+    return 0
+}
+
+fun anagramMappings(nums1: IntArray, nums2: IntArray): IntArray {
+    /*
+    Input: nums1 = [12,28,46,32,50], nums2 = [50,12,32,46,28]
+    Output: [1,4,3,2,0]
+    Explanation: As mapping[0] = 1 because the 0th element of nums1 appears at nums2[1], and mapping[1] = 4
+    because the 1st element of nums1 appears at nums2[4], and so on.
+     */
+    val result = mutableListOf<Int>()
+
+    for (i in 0 until nums1.size) {
+        if (nums2.contains(nums1[i])) {
+            val idx = nums2.indexOf(nums1[i])
+            result.add(idx)
+        }
+    }
+
+    return result.toIntArray()
+}
+
+fun medianSlidingWindow(nums: IntArray, k: Int): DoubleArray {
+    /*
+    Input: nums = [1,3,-1,-3,5,3,6,7], k = 3
+    Output: [1.00000,-1.00000,-1.00000,3.00000,5.00000,6.00000]
+    Explanation:
+    Window position                Median
+    ---------------                -----
+    [1  3  -1] -3  5  3  6  7        1
+     1 [3  -1  -3] 5  3  6  7       -1
+     1  3 [-1  -3  5] 3  6  7       -1
+     1  3  -1 [-3  5  3] 6  7        3
+     1  3  -1  -3 [5  3  6] 7        5
+     1  3  -1  -3  5 [3  6  7]       6
+     */
+    val medians: DoubleArray = DoubleArray(nums.size)
+
+    for (i in 0 until nums.size){
+        val diff = k - 1
+        val number = nums.slice(i until i+diff).sum() / k
+        medians[i] = number * 1.0
+    }
+
+    return medians
+}
+
+fun rangeSumBST(root: TreeNode?, low: Int, high: Int): Int {
+    var current = 0
+    helperRangeSumBST(root, low, high, current)
+    return current
+}
+private fun helperRangeSumBST(root: TreeNode?, low: Int, high: Int, current: Int): Int {
+    if (root != null) {
+        if (isWithinRange(low, high, root.`val` ?: 0)) {
+            return current + root.`val` ?: 0
+        }
+        helperRangeSumBST(root.left, low, high, current)
+        helperRangeSumBST(root.right, low, high, current)
+    }
+
+    return current
+}
+
+private fun isWithinRange(low: Int, high: Int, target: Int): Boolean {
+    return target in low..high
+}
+
+fun removeDuplicates(s: String, k: Int): String {
+    /*
+    Input: s = "deeedbbcccbdaa", k = 3
+    Output: "aa"
+    Explanation:
+    First delete "eee" and "ccc", get "ddbbbdaa"
+    Then delete "bbb", get "dddaa"
+    Finally delete "ddd", get "aa"
+     */
+    val builder = StringBuilder(s)
+    val memo = IntArray(builder.length)
+    var first = 0
+
+    while (first != builder.length) {
+        if (first == 0 || builder[first] !== builder[first-1]) {
+            memo[first] = 1
+        } else {
+            memo[first] = memo[first - 1] +1
+            if (memo[first] == k) {
+                builder.delete(first-k+1, first+1)
+                first -= k
+            }
+        }
+
+        first++
+    }
+
+
+    return builder.toString()
+}
+
+fun longestConsecutive(nums: IntArray): Int {
+
+    /*
+    Input: nums = [100,4,200,1,3,2]
+    Output: 4
+    Explanation: The longest consecutive elements sequence is [1, 2, 3, 4]. Therefore its length is 4.
+     */
+    nums.sort()
+    var counter = 1
+    var longest = 1
+
+    for (i in 1 until nums.size) {
+        if (nums[i] != nums[i - 1]) {
+            val remain = nums[i] - nums[i - 1]
+            if (remain == 1) {
+                counter++
+            } else {
+                longest = Math.max(longest, counter)
+                counter = 1
+            }
+        }
+    }
+
+    return Math.max(longest, counter)
+}
+
+fun wallsAndGates(rooms: Array<IntArray>): Unit {
+    /*
+    Input: rooms = [
+    [2147483647,    -1,          0,         2147483647],
+    [2147483647,    2147483647, 2147483647, -1],
+    [2147483647,    -1,         2147483647, -1],
+    [0,             -1,         2147483647, 2147483647]]
+
+    Output: [
+    [3, -1, 0,  1],
+    [2, 2,  1,  -1],
+    [1, -1, 2,  -1],
+    [0, -1, 3,  4]]
+     */
+
+
+}
+
+private fun wallsAndGatesDfs(rooms: Array<IntArray>) {
+
+}
+
+fun findAnagrams(s: String, p: String): List<Int> {
+    val sorted = p.toCharArray()
+        .sorted().joinToString("")
+
+    var first = 0
+    val indexs = mutableListOf<Int>()
+
+    while (first < s.length) {
+        var second = first + 1
+
+        while (second <= s.length) {
+            if (isFindAnagramValid(sorted, s.substring(first until second))) {
+                indexs.add(first)
+            }
+
+            second++
+        }
+
+        first++
+    }
+
+    return indexs
+}
+
+private fun isFindAnagramValid(str1: String, str2: String): Boolean {
+    return str1 == str2.toCharArray()
+        .sorted().joinToString("")
+}
+
+fun groupAnagrams(strs: Array<String>): List<List<String>> {
+    /*
+    Input: strs = ["eat","tea","tan","ate","nat","bat"]
+    Output: [["bat"],["nat","tan"],["ate","eat","tea"]]
+     */
+    val groups = mutableMapOf<String, MutableList<String>>()
+    val result = mutableListOf<List<String>>()
+    strs.sorted()
+
+    for (word in strs) {
+        val sorted = sortedWord(word)
+
+        if (!groups.containsKey(sorted)) {
+            groups[sorted] = groups.getOrDefault(sorted, mutableListOf())
+        }
+
+        groups[sorted]?.add(word)
+    }
+
+    for ((key, value) in groups) {
+        result.add(value)
+    }
+
+    return result.reversed()
+}
+
+private fun sortedWord(str: String): String {
+    return str.toCharArray()
+        .sorted()
+        .joinToString("")
+}
+
+fun lengthOfLongestSubstring(s: String): Int {
+    var current = ""
+    var maxChar = 0
+    var first = 0
+    var second = first + 1
+
+    while (first < s.length) {
+        while (second < s.length) {
+            val subs = s.subSequence(first, second)
+            if (!hasRepeatingChar(subs.toString())) {
+                current = subs.toString()
+                maxChar = Math.max(subs.length, maxChar)
+            }
+            second++
+        }
+        first++
+    }
+
+    return maxChar
+}
+
+private fun hasRepeatingChar(s: String): Boolean {
+    val hashSet = hashSetOf<Char>()
+
+    for (char in s) {
+        if (hashSet.add(char).not()) {
+            return true
+        }
+    }
+
+    return false
+}
+
+fun balanceBracket(bracket: String): Boolean {
+    /*
+    Write a function to check that a String is parenthetically balanced.
+For example:
+  - "(bar)" - balanced
+  - "(()" - not balanced
+  - "(())(()" - not balanced
+
+    Given a string, which contains '(' and ')' and some other characters,
+    verify if it is a valid parantheses. It will not contains '{' or '['.
+     */
+
+    var counter = 0
+
+    for (char in bracket) {
+        if (char == '(') {
+            counter++
+        } else if (char == ')') {
+            counter--
+        }
+    }
+
+    return counter == 0
 }
 
 fun findMissingRanges(nums: IntArray, lower: Int, upper: Int): List<String> {
@@ -60,7 +353,7 @@ private fun convertListToInt(nums: IntArray): Int {
     var result = 0
     var multiply = Math.pow(10 * 1.0, size * 1.0).toInt()
 
-    for(number in nums) {
+    for (number in nums) {
         val current = number * multiply
         result += current
         multiply /= 10
@@ -106,7 +399,7 @@ fun restoreString(s: String, indices: IntArray): String {
     val map = mutableMapOf<Int, Char>()
     val builder = StringBuilder()
 
-    for(i in 0 until s.length) {
+    for (i in 0 until s.length) {
         val idx = indices[i]
         map[idx] = s[i]
     }
@@ -128,8 +421,8 @@ fun exist(board: Array<CharArray>, word: String): Boolean {
     var idx = 0
 
     board.forEach { row ->
-        for(letter in row) {
-            if(letter == occurance[idx]) {
+        for (letter in row) {
+            if (letter == occurance[idx]) {
                 idx++
                 occurance = occurance.substring(idx, occurance.length)
             }
@@ -153,11 +446,11 @@ fun wordPattern(pattern: String, s: String): Boolean {
     val wordCount = s.split(" ")
     val patternMap = mutableMapOf<Char, Int>()
 
-    if(pattern.length != wordCount.size) {
+    if (pattern.length != wordCount.size) {
         return false
     }
 
-    for(code in pattern) {
+    for (code in pattern) {
         patternMap[code] = patternMap.getOrDefault(code, 0) + 1
     }
 
@@ -190,12 +483,12 @@ fun numTilePossibilities(tiles: String): Int {
 fun nextGreaterElement(nums1: IntArray, nums2: IntArray): IntArray {
     val list = mutableListOf<Int>()
 
-    for(i in 0 until nums1.size) {
-        if(nums1[i] in nums2) {
+    for (i in 0 until nums1.size) {
+        if (nums1[i] in nums2) {
             val idx = nums2.indexOf(nums1[i])
             val maxSize = nums2.size - 1
 
-            if(maxSize == idx) {
+            if (maxSize == idx) {
                 list.add(-1)
             } else {
                 list.add(
@@ -210,7 +503,7 @@ fun nextGreaterElement(nums1: IntArray, nums2: IntArray): IntArray {
 
 private fun nextGreater(nums: IntArray, idx: Int): Int {
     for (i in idx until nums.size) {
-        if (nums[idx] < nums[i]){
+        if (nums[idx] < nums[i]) {
             return nums[i]
         }
     }
@@ -258,11 +551,11 @@ fun alertNames(keyName: Array<String>, keyTime: Array<String>): List<String> {
 fun customSortString(order: String, s: String): String {
     val mapChar = mutableMapOf<Char, Int>()
 
-    for(char in order) {
+    for (char in order) {
         mapChar[char] = mapChar.getOrDefault(char, 0) + 1
     }
 
-    for(char in s) {
+    for (char in s) {
         mapChar[char] = mapChar.getOrDefault(char, 0) - 1
     }
 
@@ -278,8 +571,8 @@ fun customSortString(order: String, s: String): String {
 fun deliManipulation(n: String): String {
     var counter = 1
     val builder = StringBuilder()
-    for(char in n) {
-        if(char.isWhitespace()) {
+    for (char in n) {
+        if (char.isWhitespace()) {
             counter = 0
             builder.append(" ")
         }
@@ -312,10 +605,10 @@ fun maxValue(n: String, x: Int): String {
     var neg = 1
     var builder = StringBuilder(n)
 
-    if(n[0] == '-') {
+    if (n[0] == '-') {
         while (neg < n.length) {
             val value = n[neg] - '0'
-            if(value < x) {
+            if (value < x) {
                 break
             }
 
@@ -344,7 +637,7 @@ fun helperMaxValue(n: String, x: Int): String {
         .addAll(current)
     var max = 0
 
-    for(i in 0 until current.size + 1) {
+    for (i in 0 until current.size + 1) {
 
         max = Math.max(0, 0)
     }
@@ -365,8 +658,8 @@ fun buyStock(list: IntArray): List<Int> {
     var maxProfit = 0
     var result = mutableListOf<Int>()
 
-    for(idx in 1 until list.size) {
-        current += list[idx] - list[idx-1]
+    for (idx in 1 until list.size) {
+        current += list[idx] - list[idx - 1]
         current = Math.max(0, current)
         maxProfit = Math.max(current, maxProfit)
         result.add(maxProfit)
@@ -383,7 +676,7 @@ fun reverseStringWithChar(s: String, symbols: String): String {
 
     val builder = StringBuilder()
 
-    for(idx in s.length -1 downTo 0) {
+    for (idx in s.length - 1 downTo 0) {
         builder.append(s[idx])
         builder.append(symbols)
     }
@@ -399,8 +692,8 @@ fun reverseStringWithCharEveryPos(s: String, symbols: String, position: Int): St
 
     val builder = StringBuilder()
 
-    for(idx in s.length - 1 downTo 0) {
-        if(idx % position == 0) {
+    for (idx in s.length - 1 downTo 0) {
+        if (idx % position == 0) {
             builder.append(symbols)
         } else {
             builder.append(s[idx])
@@ -412,7 +705,7 @@ fun reverseStringWithCharEveryPos(s: String, symbols: String, position: Int): St
 
 fun stringShift(s: String, shift: Array<IntArray>): String {
     var shifted = s
-    for(pos in shift) {
+    for (pos in shift) {
         shifted = swapShift(shifted, pos[0], pos[1])
     }
 
@@ -950,10 +1243,10 @@ fun lowestCommonAncestor(root: TreeNode?, p: TreeNode?, q: TreeNode?): TreeNode?
 fun findKthLargest(nums: IntArray, k: Int): Int {
     val size = nums.size - 1
     var swaps = 0
-    for(i in 0 until size) {
-        for(j in 0 until size - i) {
-            if(nums[j] > nums[j+1]) {
-                swapElements(nums, j, j+1)
+    for (i in 0 until size) {
+        for (j in 0 until size - i) {
+            if (nums[j] > nums[j + 1]) {
+                swapElements(nums, j, j + 1)
             }
         }
     }
@@ -1377,29 +1670,31 @@ fun globMatching(fileName: String, pattern: String): Boolean {
 //    val sample = "bcdefg"
 //    val pattern = "*e?g"
 
-    var fileIdx = 0
-    var patternIdx = 0
+    val matching = ArrayDeque<Char>()
+    val cache = mutableListOf<Char>()
 
-    val matching = mutableListOf<Char>()
-    while (patternIdx < pattern.length) {
-        if (fileName[fileIdx] == pattern[patternIdx]) {
-            matching.add(fileName[fileIdx])
-            fileIdx++
-            patternIdx++
-        } else if (pattern[patternIdx] == '*') {
-            val nextPatternIdx = pattern.indexOf(pattern[patternIdx + 1])
-            val range = fileName.substring(fileIdx, nextPatternIdx).toList()
-            matching.addAll(range)
-            patternIdx = nextPatternIdx + 1
-            fileIdx = fileName.indexOf(range.last())
-        } else if (pattern[patternIdx] == '?') {
-            matching.add(fileName[fileIdx])
-            fileIdx++
-            patternIdx++
+
+    for (i in fileName.length - 1 downTo 0) {
+        matching.add(fileName[i])
+    }
+
+    for (i in 0 until pattern.length) {
+        when (pattern[i]) {
+            '*' -> {
+
+            }
+            '?' -> {
+                matching.pop()
+            }
+            else -> {
+                if (pattern[i] == matching.peekFirst()) {
+                    matching.pop()
+                }
+            }
         }
     }
 
-    return fileName == matching.joinToString("")
+    return matching.isEmpty()
 }
 
 
@@ -1494,17 +1789,20 @@ fun isMonotonic(array: List<Int>): Boolean {
 fun plusOne(digits: IntArray): IntArray {
 
     /*
-    input = [9]
-    output = [1,0]
+    input = [9,9]
+    output = [1,0,0]
      */
-
-    val result = digits[digits.size - 1] + 1
-    return if (result > 9) {
-        digits.plus(result - 9)
-    } else {
-        digits[digits.size - 1] = digits.last() + 1
-        digits
+    val n: Int = digits.size
+    for (i in n - 1 downTo 0) {
+        if (digits[i] < 9) {
+            digits[i]++
+            return digits
+        }
+        digits[i] = 0
     }
+    val arr = IntArray(n + 1)
+    arr[0] = 1
+    return arr
 }
 
 fun moveElementToEnd(array: MutableList<Int>, toMove: Int): List<Int> {
