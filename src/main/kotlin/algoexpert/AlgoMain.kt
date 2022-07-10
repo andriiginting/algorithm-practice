@@ -4,8 +4,53 @@ import java.util.*
 
 fun main() {
     println(
-        underscorifySubstring("testthis is a testtest to see if testestest it works", "test")
+        runLengthEncoding("AAAAAAAAAAAAABBCCCCDD")
     )
+}
+
+fun tournamentWinner(competitions: List<List<String>>, results: List<Int>): String {
+    val rank = mutableMapOf<String, Int>()
+
+    for(i in 0 until competitions.size) {
+        val homeAway = results[i]
+        val winner = getWinner(competitions[i], homeAway)
+        rank[winner] = rank.getOrDefault(winner, 0) + 1
+    }
+
+    val result = rank.maxBy { it.value }
+    return result?.key.orEmpty()
+}
+
+private fun getWinner(list: List<String>, winner: Int): String {
+    return if (winner == 0) {
+        list[1]
+    } else {
+        list[0]
+    }
+}
+
+fun shortenPath(path: String): String {
+    /*
+    /foo/bar/baz
+     */
+    val split = path.replace("//","/")
+        .split("/")
+
+    println(split)
+    val builder = StringBuilder()
+
+    var idx = split.size - 1
+    while (idx != 0) {
+        val dir = split[idx]
+        if (dir == "..") {
+            idx -= 2
+        } else if(dir != ".") {
+            builder.append("$dir/")
+            idx--
+        }
+    }
+
+    return builder.toString()
 }
 
 fun underscorifySubstring(string: String, substring: String): String {
@@ -91,28 +136,22 @@ fun generateDocument(characters: String, document: String): Boolean {
 }
 
 fun runLengthEncoding(string: String): String {
-    val encoding = mutableMapOf<Char, Int>()
-    val result = StringBuilder()
+    var counter = 0
+    var builder = StringBuilder()
 
-    for(char in string) {
-        encoding[char] = encoding.getOrDefault(char, 0) + 1
+    if (string.length < 2) {
+        return string
     }
 
-    for((key, value) in encoding) {
-        if(value in 2..8) {
-            result.append("$value$key")
-        } else if (value > 9) {
-            var remain = value
-            while (remain < 10) {
-                val total = 9 % remain
-                result.append("$total$key")
-                remain = 9 % remain
-            }
-            result.append("$remain$key")
+    for(i in 1 until string.length) {
+        if (builder[i] == builder[i-1]) {
+            counter++
+            builder.append("$counter${string[i-1]}")
         } else {
-            result.append("$key")
+            counter = 0
+            builder.append("${string[i-1]}")
         }
     }
 
-    return result.toString()
+    return string
 }

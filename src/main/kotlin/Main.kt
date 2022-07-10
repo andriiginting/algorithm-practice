@@ -1,10 +1,216 @@
-import leetcode.isDuplicateInSubBox
 import java.util.*
 
 
 fun main() {
-    val result = globMatching("abcdefg", "abc?e?g")
+    val result = bulbSwitch(4)
     println(result)
+
+}
+
+fun bulbSwitch(n: Int): Int {
+    val list = mutableListOf<Boolean>()
+    initBuild(n, list)
+    var counter = list.size
+
+    for (i in 1 until n) {
+        list[i] = false
+        counter--
+    }
+
+    return counter
+}
+private fun initBuild(size: Int, list: MutableList<Boolean>) {
+    for (i in 0 until size) {
+        list.add(true)
+    }
+}
+
+fun medianSlidingWindow(nums: IntArray, k: Int): DoubleArray {
+    /*
+    Input: nums = [1,3,-1,-3,5,3,6,7], k = 3
+    Output: [1.00000,-1.00000,-1.00000,3.00000,5.00000,6.00000]
+    Explanation:
+    Window position                Median
+    ---------------                -----
+    [1  3  -1] -3  5  3  6  7        1
+     1 [3  -1  -3] 5  3  6  7       -1
+     1  3 [-1  -3  5] 3  6  7       -1
+     1  3  -1 [-3  5  3] 6  7        3
+     1  3  -1  -3 [5  3  6] 7        5
+     1  3  -1  -3  5 [3  6  7]       6
+     */
+    val medians = DoubleArray(nums.size)
+    var first = 0 // 1
+    var second = first + k - 1 //1+3-1 = 3
+    val paramsSize = nums.size
+
+    if (paramsSize < k) {
+        return doubleArrayOf(0.0)
+    }
+
+    while(second < nums.size) {
+        //[1  3  -1]
+        val numbers = nums.slice(first until second)
+        //[-1  1  3]
+        medians[first] = findMedianNumber(numbers, k) //1
+        first++
+    }
+
+    return medians
+}
+
+private fun findMedianNumber(number: List<Int>, k: Int): Double {
+    var mid = 0
+    val sorted = number.sorted()
+    return if (number.size % 2 == 0) {
+        mid = (number.size / 2)
+        sorted[mid].toDouble() + sorted[mid-1].toDouble()
+    } else {
+        sorted[mid].toDouble()
+    }
+}
+
+fun removeNthFromEnd(head: ListNode?, n: Int): ListNode? {
+    var size = 0
+    var temp = ListNode(0)
+    temp.next = head
+    var first = temp
+    var second = temp
+
+    return head
+}
+
+fun lengthOfLongestSubstringV2(s: String): Int {
+    var first = 0
+    var second = 0
+    var maxLength = 0
+    val nonRepeating = hashSetOf<Char>()
+
+    while (second < s.length) {
+        if (nonRepeating.contains(s[second]).not()) {
+            nonRepeating.add(s[second])
+            maxLength = Math.max(nonRepeating.size, maxLength)
+            second++
+        } else {
+            nonRepeating.remove(s[first])
+            first++
+        }
+    }
+
+
+    return maxLength
+}
+
+fun longestPalindrome(s: String): String {
+    var first = 0
+    var second = 0
+
+    for (i in 0 until s.length) {
+        val firstScan = scanText(s, i, i)
+        val secondScan = scanText(s, i, i + 1)
+        val longest = Math.max(firstScan, secondScan)
+
+        if (longest > second - first) {
+            first = i - (longest - 1) / 2
+            second = i + longest / 2
+        }
+    }
+
+    return s.substring(first, second + 1)
+}
+
+private fun scanText(s: String, first: Int, last: Int): Int {
+    var left = first
+    var right = last
+    if (s.isEmpty() || left < 0 || right > s.length) {
+        return 0
+    }
+
+    while (s.isNotEmpty() || left > 0 || right <= s.length || s[left] == s[right]) {
+        left--
+        right++
+    }
+
+    return right - left - 1
+}
+
+fun isLongestPalindrome(origin: String): Boolean {
+    return origin == origin.reversed()
+}
+
+fun mergeTwoLists(list1: ListNode?, list2: ListNode?): ListNode? {
+    val first = mutableListOf<Int>()
+    val second = mutableListOf<Int>()
+
+    var firstNode = list1
+    while (firstNode?.next != null) {
+        first.add(firstNode.`val`)
+        firstNode = firstNode.next
+    }
+
+    var secondNode = list2
+    while (secondNode?.next != null) {
+        second.add(secondNode.`val`)
+        secondNode = secondNode.next
+    }
+
+    val merged = first.zip(second)
+
+    var populateLinkedlist: ListNode? = null
+
+    for (node in merged) {
+        val current = ListNode(node.first)
+        populateLinkedlist?.next = current
+        populateLinkedlist?.next?.next = ListNode(node.second)
+    }
+
+    return populateLinkedlist
+}
+
+fun maxRepeatedChar(word: String, max: Int): String {
+    /*
+    given a string of consecutive repeated characters and max value,
+    return another string of max repeated characters : for ex: aaaaabbbbbcccdd and max is 2 should be aabbccdd
+     */
+    val mapWord = mutableMapOf<Char, Int>()
+    val builder = StringBuilder()
+
+    for (char in word) {
+        mapWord[char] = mapWord.getOrDefault(char, 0) + 1
+    }
+
+    for ((key, value) in mapWord) {
+        if (value > max) {
+            val repeatedWord = key.toString().repeat(max)
+            builder.append(repeatedWord)
+        } else {
+            val repeatedWord = key.toString().repeat(value)
+            builder.append(repeatedWord)
+        }
+    }
+
+    return builder.toString()
+}
+
+fun mostVisitedPattern(username: Array<String>, timestamp: IntArray, website: Array<String>): List<String> {
+    val map = mutableMapOf<String, TreeMap<Int, String>>() // map name to map of timestamp and website only
+
+    for (i in 0 until timestamp.size) {
+        if (!map.containsKey(username[i])) {
+            map.putIfAbsent(username[i], TreeMap())
+        }
+        val treeMap = map.getOrDefault(username[i], TreeMap())
+        treeMap[timestamp[i]] = website[i]
+        map[username[i]] = treeMap
+    }
+
+
+
+    return listOf()
+}
+
+fun intersect(nums1: IntArray, nums2: IntArray): IntArray {
+    return nums1.intersect(nums2.toList()).toIntArray()
 }
 
 fun isLongPressedName(name: String, typed: String): Boolean {
@@ -28,7 +234,7 @@ fun firstMissingPositive(nums: IntArray): Int {
     nums.sorted()
     val missingSet = mutableSetOf<Int>()
 
-    for(i in 0 until nums.size) {
+    for (i in 0 until nums.size) {
         missingSet.add(nums[i])
     }
 
@@ -56,36 +262,12 @@ fun anagramMappings(nums1: IntArray, nums2: IntArray): IntArray {
     return result.toIntArray()
 }
 
-fun medianSlidingWindow(nums: IntArray, k: Int): DoubleArray {
-    /*
-    Input: nums = [1,3,-1,-3,5,3,6,7], k = 3
-    Output: [1.00000,-1.00000,-1.00000,3.00000,5.00000,6.00000]
-    Explanation:
-    Window position                Median
-    ---------------                -----
-    [1  3  -1] -3  5  3  6  7        1
-     1 [3  -1  -3] 5  3  6  7       -1
-     1  3 [-1  -3  5] 3  6  7       -1
-     1  3  -1 [-3  5  3] 6  7        3
-     1  3  -1  -3 [5  3  6] 7        5
-     1  3  -1  -3  5 [3  6  7]       6
-     */
-    val medians: DoubleArray = DoubleArray(nums.size)
-
-    for (i in 0 until nums.size){
-        val diff = k - 1
-        val number = nums.slice(i until i+diff).sum() / k
-        medians[i] = number * 1.0
-    }
-
-    return medians
-}
-
 fun rangeSumBST(root: TreeNode?, low: Int, high: Int): Int {
     var current = 0
     helperRangeSumBST(root, low, high, current)
     return current
 }
+
 private fun helperRangeSumBST(root: TreeNode?, low: Int, high: Int, current: Int): Int {
     if (root != null) {
         if (isWithinRange(low, high, root.`val` ?: 0)) {
@@ -116,12 +298,12 @@ fun removeDuplicates(s: String, k: Int): String {
     var first = 0
 
     while (first != builder.length) {
-        if (first == 0 || builder[first] !== builder[first-1]) {
+        if (first == 0 || builder[first] !== builder[first - 1]) {
             memo[first] = 1
         } else {
-            memo[first] = memo[first - 1] +1
+            memo[first] = memo[first - 1] + 1
             if (memo[first] == k) {
-                builder.delete(first-k+1, first+1)
+                builder.delete(first - k + 1, first + 1)
                 first -= k
             }
         }
@@ -1361,53 +1543,6 @@ fun spiralOrder(matrix: Array<IntArray>): List<Int> {
     }
 
     return result
-}
-
-
-fun mostVisitedPattern(username: Array<String>, timestamp: IntArray, website: Array<String>): List<String> {
-    /*
-    Input:  username = ["joe","joe","joe","james","james","james","james","mary","mary","mary"],
-            timestamp = [1,2,3,4,5,6,7,8,9,10],
-            website = ["home","about","career","home","cart","maps","home","home","about","career"]
-    Output: ["home","about","career"]
-
-    Explanation: The tuples in this example are:
-    ["joe","home",1],
-    ["joe","about",2],
-    ["joe","career",3],
-    ["james","home",4],
-    ["james","cart",5],
-    ["james","maps",6],
-    ["james","home",7],
-    ["mary","home",8],
-    ["mary","about",9],
-    ["mary","career",10].
-
-    The pattern ("home", "about", "career") has score 2 (joe and mary).
-    The pattern ("home", "cart", "maps") has score 1 (james).
-    The pattern ("home", "cart", "home") has score 1 (james).
-    The pattern ("home", "maps", "home") has score 1 (james).
-    The pattern ("cart", "maps", "home") has score 1 (james).
-    The pattern ("home", "home", "home") has score 0 (no user visited home 3 times).
-
-
-    Input:  username = ["ua","ua","ua","ub","ub","ub"],
-            timestamp = [1,2,3,4,5,6],
-            website = ["a","b","a","a","b","c"]
-    Output: ["a","b","a"]
-     */
-
-    val list = mutableListOf<VisitedWebsite>()
-
-    for (i in 0 until username.size) {
-        list.add(
-            VisitedWebsite(username[i], timestamp[i], website[i])
-        )
-    }
-
-    println(list)
-
-    return emptyList()
 }
 
 data class VisitedWebsite(
@@ -2666,11 +2801,20 @@ fun twoSum(nums: IntArray, target: Int): IntArray {
 
 fun licenseKeyFormatting(s: String, k: Int): String {
     val fistGroup = s.substringBefore("-")
-    println(fistGroup)
-    val formatted = s.replace("-", "")
-        .removePrefix(fistGroup)
-    return formatted.chunked(k).joinToString("-", prefix = "$fistGroup-")
-        .toUpperCase()
+    val secondGroup = s.substringAfter("-")
+        .replace("-", "")
+    val builder = StringBuilder()
+
+    builder.apply {
+        append(fistGroup.toUpperCase())
+        append("-")
+    }
+
+    var second = ""
+    for (i in 0 until secondGroup.length) {
+    }
+
+    return builder.toString()
 }
 
 fun multiply(num1: String, num2: String): String {
