@@ -1,10 +1,126 @@
 import java.util.*
-import javax.xml.stream.events.Characters
 
 
 fun main() {
-    val result = countPoints("B0B6G0R6R0R6G9")
+    val result = listOf(1,3,4,1,2)
+    result.union(list.chunked(3))
+
     println(result)
+}
+
+fun wordBreak(s: String, wordDict: List<String>?): Boolean {
+    val wordDictSet: Set<String> = HashSet(wordDict)
+    val dp = BooleanArray(s.length + 1)
+    dp[0] = true
+    for (i in 1..s.length) {
+        for (j in 0 until i) {
+            if (dp[j] && wordDictSet.contains(s.substring(j, i))) {
+                dp[i] = true
+                break
+            }
+        }
+    }
+    return dp[s.length]
+}
+
+fun minDeletions(s: String): Int {
+    var counter = 0
+    val map = mutableMapOf<Char, Int>()
+
+    for(char in s){
+        map[char] = map.getOrDefault(char, 0) + 1
+    }
+
+    map.forEach { t, u ->
+        println("before: $t $u")
+    }
+
+    map.toSortedMap()
+    val seen = hashSetOf<Char>()
+
+    for((key, value) in map) {
+        println("$key $value")
+        if(seen.contains(key)) {
+            map[key] = value - 1
+            counter++
+        } else {
+            seen.add(key)
+        }
+    }
+
+    return counter
+}
+
+fun mergeKLists(lists: Array<ListNode?>): ListNode? {
+    val heap = PriorityQueue<Int>()
+
+    for(node in lists) {
+        var head = node
+        while(head != null) {
+            heap.add(head?.`val` ?: 0)
+            head = head.next
+        }
+    }
+
+    var dummy = ListNode(0)
+    var head = dummy
+
+    while(!heap.isEmpty()) {
+        val nextNode = ListNode(heap.remove())
+        head.next = nextNode
+    }
+
+    return dummy.next
+}
+
+fun earliestAcq(logs: Array<IntArray>, n: Int): Int {
+    val list = IntArray(2)
+    Arrays.sort<IntArray>(logs) { a: IntArray, b: IntArray -> a[0] - b[0] }
+    val groups = hashSetOf<Int>()
+    /*
+    [20190101,0,1],
+    [20190104,3,4],
+    [20190107,2,3],
+    [20190211,1,5],
+    [20190224,2,4],
+    [20190301,0,3],
+    [20190312,1,2],
+    [20190322,4,5]
+
+    n=6
+    */
+    var earlyTime = -1
+    for (log in logs) {
+        mutableListOf<Int>().apply {
+            add(log[1])
+            add(log[2])
+        }.let {
+            if (groups.addAll(it)) {
+                earlyTime = log[0]
+            }
+        }
+    }
+
+    return earlyTime
+}
+
+fun longestCommonSubsequence(text1: String, text2: String): Int {
+    val list = mutableListOf<String>()
+    var longest = 0
+    return lcsHelper(0, 0, text1, text2, longest)
+}
+
+fun lcsHelper(i: Int, j: Int, str1: String, str2: String, count: Int): Int {
+    return if (str1[i].isWhitespace() || str2[j].isWhitespace()) {
+        count
+    } else if (str1[i] == str2[j]) {
+        1 + lcsHelper(i + 1, j + 1, str1, str2, count)
+    } else {
+        Math.max(
+            lcsHelper(i + 1, j, str1, str2, count),
+            lcsHelper(i, j + 1, str1, str2, count)
+        )
+    }
 }
 
 fun countPoints(rings: String): Int {
@@ -13,8 +129,8 @@ fun countPoints(rings: String): Int {
     val blue = BooleanArray(10)
     var count = 0
 
-    for(i in 1 until rings.length step 2) {
-        val color = rings[i-1]
+    for (i in 1 until rings.length step 2) {
+        val color = rings[i - 1]
         val position = rings[i].toString().toInt()
         when (color) {
             'R' -> {
@@ -29,8 +145,8 @@ fun countPoints(rings: String): Int {
         }
     }
 
-    for(i in 0 until red.size) {
-        if(red[i] && green[i] && blue[i]) {
+    for (i in 0 until red.size) {
+        if (red[i] && green[i] && blue[i]) {
             count++
         }
     }
@@ -42,13 +158,13 @@ fun reverseKGroup(head: ListNode?, k: Int): ListNode? {
     val list = mutableListOf<ListNode>()
 
     var groups = head
-    while(groups != null){
+    while (groups != null) {
         list.add(groups)
         groups = groups.next
     }
 
-    for(i in 0 until list.size) {
-        if(i / k == 0) {
+    for (i in 0 until list.size) {
+        if (i / k == 0) {
             list.slice(i..10).reversed()
         }
         println(list[i])
@@ -73,44 +189,69 @@ If none of the move works out, return false, NO SOLUTON.
  */
 fun subsets(nums: IntArray): List<List<Int>> {
     val result = mutableListOf<MutableList<Int>>()
-    backtracking(nums,result,0,mutableListOf())
+    backtracking(nums, result, 0, mutableListOf())
 
     return result
 }
 
 
-private fun backtracking(nums: IntArray, res: MutableList<MutableList<Int>>, indx: Int, subList: MutableList<Int>){
+private fun backtracking(nums: IntArray, res: MutableList<MutableList<Int>>, indx: Int, subList: MutableList<Int>) {
 
     // base case
-    if(subList.size <= nums.size){
+    if (subList.size <= nums.size) {
         val candidate = subList.toMutableList()
         candidate.sort() // sorting is needed here because it should not contain the duplicate number in the sublist aka candidate
-        if(!res.contains(candidate)){
+        if (!res.contains(candidate)) {
             res.add(candidate) // if it is suitable just add it to the result list
         }
     }
 
-    for(i in indx until nums.size) if(!subList.contains(nums[i])){ // this if statement is needed to prevent using the same numbers again and again
+    for (i in indx until nums.size) if (!subList.contains(nums[i])) { // this if statement is needed to prevent using the same numbers again and again
         subList.add(nums[i])
-        backtracking(nums,res,indx + 1, subList)
+        backtracking(nums, res, indx + 1, subList)
         subList.removeAt(subList.size - 1) // we need to pop up the element back since the next iteration will contain different combination
     }
 }
 
 fun decodeString(s: String): String {
-    val openBracket = '['
-    val closeBracket = ']'
-
     val numberStack = Stack<Int>()
-    val charStack = Stack<Char>()
+    val stringStack = Stack<String>()
+    var number = 0 // to keep track the number in case has more than 10
+    var builder = StringBuilder()
 
-    return ""
+    for (i in 0 until s.length) {
+        val input = s.get(i)
+
+        if (input.isDigit()) {
+            number = number * 10 + (input - '0')
+        } else if (input.isLetter()) {
+            builder.append(input)
+        } else if (input == '[') {
+            numberStack.add(number)
+            stringStack.add(builder.toString())
+
+            number = 0
+            builder = StringBuilder()
+        } else {
+            val count = numberStack.pop()
+            val duplicateWord = StringBuilder(stringStack.pop())
+
+            var idx = 1
+            while (idx <= count) {
+                duplicateWord.append(stringStack)
+                idx++
+            }
+            builder = duplicateWord
+        }
+    }
+
+    return builder.toString()
 }
 
 fun subsetsWithDup(nums: IntArray): List<List<Int>> {
     val subs = mutableListOf<MutableList<Int>>()
 
-    
+
 
     return subs
 }
@@ -127,6 +268,7 @@ fun bulbSwitch(n: Int): Int {
 
     return counter
 }
+
 private fun initBuild(size: Int, list: MutableList<Boolean>) {
     for (i in 0 until size) {
         list.add(true)
@@ -148,14 +290,16 @@ fun medianSlidingWindow(nums: IntArray, k: Int): DoubleArray {
      1  3  -1  -3  5 [3  6  7]       6
      */
     val medians = mutableListOf<Double>()
+    val queue = PriorityQueue<Int>()
     var first = 0
     var second = k - 1
 
-    while(second < nums.size) {
-        val sorted = nums.slice(first..second).sorted()
-        medians.add(findMedianNumber(sorted))
+    while (second < nums.size) {
+        queue.addAll(nums.slice(first..second))
+        medians.add(findMedianNumber(queue.toList()))
         first++
         second++
+        queue.clear()
     }
 
     return medians.toDoubleArray()
@@ -165,7 +309,7 @@ private fun findMedianNumber(number: List<Int>): Double {
     return if (number.size % 2 == 0) {
         ((number[number.size / 2] + number[number.size / 2 - 1]) / 2).toDouble()
     } else {
-        number[number.size/2].toDouble()
+        number[number.size / 2].toDouble()
     }
 }
 
