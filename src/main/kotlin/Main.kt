@@ -1,11 +1,626 @@
 import java.util.*
+import java.util.LinkedList
+import kotlin.math.min
 
 
 fun main() {
-    val result = listOf(1,3,4,1,2)
-    result.union(list.chunked(3))
+    val result = largestCountValue(
+        intArrayOf(2,3,1)
+    )
 
     println(result)
+}
+
+/**
+ * banking problem 3
+ *
+ * count the number of operation when merging number
+ *
+ */
+fun largestCountValue(arr: IntArray): Int {
+    // Create an auxiliary array to store the sorted array during merging
+    val temp = IntArray(arr.size)
+    // Create an array to count the number of times each element from the right is merged before the left
+    val count = IntArray(arr.size) { 0 }
+
+    // Recursive function for modified merge sort
+    fun mergeSort(left: Int, right: Int) {
+        if (left >= right) return
+
+        val mid = left + (right - left) / 2
+        // Sort the left half
+        mergeSort(left, mid)
+        // Sort the right half
+        mergeSort(mid + 1, right)
+        // Merge the two halves and update counts
+        mergeHelper(temp, arr, count, left, mid, right)
+    }
+
+
+
+    // Start the merge sort
+    mergeSort(0, arr.size - 1)
+
+    // Return the maximum count value
+    return count.max() ?: 0
+}
+
+// Function to merge two halves and count right-before-left merges
+fun mergeHelper(temp: IntArray, arr: IntArray, count: IntArray, left: Int, mid: Int, right: Int) {
+    // Copy to temp array
+    for (i in left..right) {
+        temp[i] = arr[i]
+    }
+
+    var i = left    // Pointer for the left half
+    var j = mid + 1 // Pointer for the right half
+    var k = left    // Pointer for the final merged array
+
+    while (i <= mid && j <= right) {
+        if (temp[i] <= temp[j]) {
+            // Element from the left half is smaller or equal, no counter update
+            arr[k++] = temp[i++]
+        } else {
+            // Element from the right half is smaller, update the count
+            arr[k++] = temp[j++]
+            count[temp[j - 1]] += (mid - i + 1) // All remaining elements in left half are counted
+        }
+    }
+
+    // Copy remaining elements from the left half
+    while (i <= mid) {
+        arr[k++] = temp[i++]
+    }
+
+    // Copy remaining elements from the right half
+    while (j <= right) {
+        arr[k++] = temp[j++]
+    }
+}
+
+/**
+ * banking problem 2
+ *
+ * Sorting name based on Name and Roman number
+ * [Steven XL, Steven XXI, David IX, Andri III]
+ *
+ * return [Andri III, David IX, Steven XXI, Steven XL]
+ */
+fun sortRoman(names: List<String>): List<String> {
+    val sortedName = mutableListOf<String>()
+    // simplest approach will be sort the names twice
+    // first, sort based on name
+    // second, sort based on roman number
+    // give us flexibility to sort names
+    // with comparator, it will be more faster O(n) -> n will be name
+
+    return names.sortedWith(compareBy({ it.split(" ")[0] }, { romanToInt(it.split(" ")[1]) }))
+}
+
+/**
+ * banking problem 1
+ *
+ * Count number which dont have repeating number, fox example 102, 89, 23
+ */
+fun countNumbers(numbers: List<IntArray>): Int {
+    // naive solution using set to avoid duplication.
+    // with this approach, the minimum time complexity O(MxN) M -> col, N -> row
+    //optimize will be O(n.logn)
+    val setNumber = mutableListOf<Int>()
+
+    fun hasRepeatingDigits(num: Int): Boolean {
+        var n = num
+        val seenDigits = BooleanArray(10)
+
+        while (n > 0) {
+            val digit = n % 10
+            if (seenDigits[digit]) {
+                return true
+            }
+            seenDigits[digit] = true
+            n /= 10
+        }
+
+        return false
+    }
+
+    numbers.forEach { arr ->
+        arr.forEach { number ->
+            if (!hasRepeatingDigits(number)) {
+                setNumber.add(number)
+            }
+        }
+    }
+
+    return setNumber.size
+}
+
+fun lengthOfLastWord(s: String): Int {
+    val word = s.trim().splitToSequence(' ')
+        .filter { it.isNotEmpty() }
+        .toList()
+
+    return word.lastIndex
+}
+
+fun getPermutation(n: Int, k: Int): String {
+    // StringBuilder to create the resulting permutation string
+    var k = k
+    val permutation = java.lang.StringBuilder()
+    // Visited array keeps track of which numbers have been used
+    val visited = BooleanArray(n + 1)
+
+
+    // Loop through each position in the permutation
+    for (i in 0 until n) {
+        // Calculate the factorial of the numbers left
+        var factorial = 1
+        for (j in 1 until n - i) {
+            factorial *= j
+        }
+
+
+        // Find the number to put in the current position
+        for (j in 1..n) {
+            if (!visited[j]) {
+                // If the remaining permutations are more than k,
+                // decrease k and find the next number
+                if (k > factorial) {
+                    k -= factorial
+                } else {
+                    // Add the number to the result and mark it as visited
+                    permutation.append(j)
+                    visited[j] = true
+                    break
+                }
+            }
+        }
+    }
+
+
+    // Return the final permutation string
+    return permutation.toString()
+}
+
+fun firstMissingPositive(nums: IntArray): Int {
+    val maxNumber = nums.size * 2
+    val numberOfMap = mutableMapOf<Int, Int>()
+
+    // populate possible number from 1 -> maxNumber
+    for (i in 1 until maxNumber) {
+        numberOfMap[i] = 1 //indicate that number is reserve
+    }
+
+    // loop through the nums parameter
+    // check if the number is actually available in number of array
+    for (number in nums) {
+        if (numberOfMap[number] == 1) {
+            numberOfMap.remove(number)
+        }
+    }
+
+    return numberOfMap.keys.first()
+}
+
+fun countBlackBlocks(m: Int, n: Int, coordinates: Array<IntArray>): LongArray {
+    val map: MutableMap<Long, Int> = HashMap(coordinates.size)
+    val directions = arrayOf(0, 0, -1, -1, 0)
+
+    for (coordinate in coordinates) {
+        val x = coordinate[0]
+        val y = coordinate[1]
+
+        for (i in 0 until 4) {
+            val newXAxis = x + directions[i]
+            val newYAxis = y + directions[i + 1]
+
+            if (newXAxis >= 0 && newXAxis < m - 1 && newYAxis >= 0 && newXAxis < n - 1) {
+                val index = 1L * newXAxis * n + newYAxis
+                map.merge(index, 1, Integer::sum)
+            }
+        }
+    }
+
+    val result = LongArray(5)
+    result[0] = ((m - 1) * (n - 1)).toLong()
+
+    for (key in map.values) {
+        result[key]++
+        result[0]--
+    }
+
+    return result
+}
+
+fun splitMessage(message: String, limit: Int): List<String> {
+    val messageLength: Int = message.length // Length of the original message.
+    var sumOfDigits = 0 // To keep track of the sum of the digits of all parts.
+
+
+    // Initialize the array to hold the split message parts.
+    var answer = arrayOfNulls<String>(0)
+
+
+    // Looping over the possible number of parts from 1 to messageLength.
+    for (parts in 1..messageLength) {
+        // Length of digits in the current part number.
+        val lengthOfCurrentPartDigits = "$parts".length
+        // Update the sum of the digits with current part number's digit length.
+        sumOfDigits += lengthOfCurrentPartDigits
+
+
+        // Total length consumed by the digit parts.
+        val totalDigitsLength = lengthOfCurrentPartDigits * parts
+        // Total length consumed by the delimiters "<" and "/>".
+        val totalDelimiterLength = 3 * parts
+
+
+        // Check if the current breakup fits into the limits.
+        if (limit * parts - (sumOfDigits + totalDigitsLength + totalDelimiterLength) >= messageLength) {
+            var currentIndex = 0 // Start index for the substring.
+            answer = arrayOfNulls(parts) // Initialize the answer array with the number of parts.
+
+
+            // Split the message into the determined number of parts.
+            for (part in 1..parts) {
+                // Generate the tail string for the current part.
+                val tail = "<$part/$parts>"
+                // Calculate the end index for the substring; it's either the end of the message or the max allowed by the limit, minus the length of the tail.
+                val endIndex = min(messageLength, currentIndex + limit - tail.length)
+                // Create the substring for the current part, add the tail, and store it in the answer array.
+                val splitPart = message.substring(currentIndex, endIndex) + tail
+                answer[part - 1] = splitPart
+                // Update the start index for the next part.
+                currentIndex += limit - tail.length
+            }
+            // Everything fitted perfectly, break out of the loop.
+            break
+        }
+    }
+
+    // Return the split message parts.
+    return answer.filterNotNull().toList()
+}
+
+private fun splitPattern(index: Int, count: Int): String {
+    return "<${index + 1}/$count>"
+}
+
+fun removeOccurrences(s: String, part: String): String {
+    var first = 0
+    var second = part.length
+    val stringBuilder = StringBuilder(s)
+
+    while (second <= stringBuilder.length) {
+        val subs = stringBuilder.substring(first, second)
+
+        if (subs == part) {
+            stringBuilder.delete(first, second)
+            //reset first index
+            first = 0
+            second = part.length
+            continue
+        } else {
+            first++
+            second++
+        }
+    }
+
+    return stringBuilder.toString()
+}
+
+fun isOneEditDistance(word1: String, word2: String): Boolean {
+    var countDif = 0
+
+    for (i in word1.indices) {
+        if (word1[i] != word2[i]) {
+            countDif += 1
+
+            if (countDif > 1) return false
+        }
+    }
+
+    return true
+}
+
+fun minTotalDistance(grid: Array<IntArray>): Int {
+    /**
+    the approach here is to minimize calculation by row and column
+
+     */
+
+    val rowCoordinate = mutableListOf<Int>()
+    val colCoordinate = mutableListOf<Int>()
+
+    grid.forEachIndexed { rowIndex, row ->
+        row.forEachIndexed { colIndex, _ ->
+            if (grid[rowIndex][colIndex] == 1) {
+                rowCoordinate.add(rowIndex)
+                colCoordinate.add(colIndex)
+            }
+        }
+    }
+
+    colCoordinate.sorted()
+
+    val medianRow = rowCoordinate[rowCoordinate.size shr 1]
+    val medianCol = colCoordinate[colCoordinate.size shr 1]
+
+    return calculateDistance(rowCoordinate, medianRow) + calculateDistance(colCoordinate, medianCol)
+}
+
+private fun calculateDistance(list: List<Int>, median: Int): Int {
+    var sum = 0
+
+    for (point in list) {
+        sum += Math.abs(point - median)
+    }
+
+    return sum
+}
+
+/**
+ * Input: nums = [1,3,-1,-3,5,3,6,7], k = 3
+ * Output: [3,3,5,5,6,7]
+ * Explanation:
+ * Window position                Max
+ * ---------------               -----
+ * [1  3  -1] -3  5  3  6  7       3
+ *  1 [3  -1  -3] 5  3  6  7       3
+ *  1  3 [-1  -3  5] 3  6  7       5
+ *  1  3  -1 [-3  5  3] 6  7       5
+ *  1  3  -1  -3 [5  3  6] 7       6
+ *  1  3  -1  -3  5 [3  6  7]      7
+ */
+fun maxSlidingWindow(nums: IntArray, k: Int): IntArray {
+    val maxSliding = mutableListOf<Int>()
+
+    if (nums.size == 1) return nums
+
+    var left = 0
+    var maxIdx = left + k - 1
+
+    while (maxIdx < nums.size) {
+        maxSliding.add(
+            findMaxSlidingValue(nums, left, maxIdx)
+        )
+        left++
+    }
+
+    return maxSliding.toIntArray()
+}
+
+private fun findMaxSlidingValue(nums: IntArray, start: Int, end: Int): Int {
+    var max = 0
+
+    for (idx in start until end) {
+        max = Math.max(max, nums[start])
+    }
+
+    return max
+}
+
+fun minMutation(startGene: String, endGene: String, bank: Array<String>): Int {
+    if (startGene == endGene) return 0
+    val mutationMap = mutableMapOf(
+        'A' to "TCG", 'T' to "ACG", 'C' to "ATG", 'G' to "ATC"
+    )
+
+    val geneSet = mutableSetOf<String>()
+    geneSet.addAll(bank)
+
+    // initialize deque to traverse all gene
+    val deque = LinkedList<Pair<String, Int>>()
+    deque.offer(startGene to 0)  // add starting point
+
+    while (deque.isNotEmpty()) {
+        val current = deque.poll()
+        val currentGene = current.first
+        val currentStep = current.second
+
+        if (endGene == currentGene) return currentStep // return every current gene and match with end gene
+
+        //otherwise, traverse all possibility of gene mutation with current gene
+
+        for (i in currentGene.indices) {
+
+            //check all gene mutation from map
+            for (mutation in mutationMap[currentGene[i]]?.toCharArray()!!) {
+
+                //construct new mutation
+                val mutated = currentGene.substring(0, i) + mutation + currentGene.substring(i + 1)
+
+                if (geneSet.contains(mutated)) {
+                    deque.offer(mutated to currentStep + 1)
+                    geneSet.remove(mutated)
+                }
+            }
+        }
+    }
+
+    return -1
+
+}
+
+fun lastRemaining(n: Int): Int {
+    val list = mutableListOf<Int>()
+    list.addAll(1..n)
+
+    var shouldStartFromLeft = true
+
+    while (list.size > 1) {
+        if (!shouldStartFromLeft) {
+            for (idx in list.lastIndex downTo 0 step 2) {
+                if (idx >= 0) list.removeAt(idx)
+            }
+        } else {
+            for (idx in 0 until list.size step 2) {
+                list.removeAt(idx)
+            }
+        }
+
+        println(list)
+        shouldStartFromLeft = !shouldStartFromLeft
+    }
+
+    return list[0]
+}
+
+fun findTheDifference(s: String, t: String): Char {
+    var sum = 0
+    for (char in t) {
+        sum += char.hashCode()
+    }
+
+    for (char in s) {
+        sum -= char.hashCode()
+    }
+
+    return sum.toChar()
+}
+
+
+fun kthSmallest(matrix: Array<IntArray>, k: Int): Int {
+    val heap = PriorityQueue<List<Int>> { a, b ->
+        matrix[a[0]][a[1]].compareTo(matrix[b[0]][b[1]])
+    }
+
+    //indicate initial index is 0,0
+    heap.offer(listOf(0, 0))
+
+    var smallest = k
+
+    val topColumn = IntArray(matrix.size)
+    val firstRow = IntArray(matrix.size)
+
+    while (smallest > 1) {
+        smallest--
+        val result = heap.poll()
+
+        val row = result[0]
+        val col = result[1]
+
+        firstRow[row] = col + 1
+
+        if (col + 1 < matrix.size && topColumn[col + 1] == row) {
+            heap.offer(listOf(row, col + 1))
+        }
+
+        topColumn[col] = row + 1
+
+        if (row + 1 < matrix.size && firstRow[row + 1] == col) {
+            heap.offer(listOf(row + 1, col))
+        }
+    }
+
+    val result = heap.poll()
+    return matrix[result[0]][result[1]]
+}
+
+fun topKFrequentInt(nums: IntArray, k: Int): IntArray {
+    val map = nums.toList().groupingBy { it }.eachCount().entries.sortedBy { it.value }
+    //grouping and count similar number 1 to 2, 2 to 1, 3 to 3
+
+    val result = mutableListOf<Int>()
+    map.forEach { (key, value) ->
+        result.add(key)
+    }
+
+    return result.takeLast(k).toIntArray()
+}
+
+fun maskPII(s: String): String {
+    val lowercaseText = s.toLowerCase()
+    return if (isEmailFormat(s)) {
+        buildString {
+            append(lowercaseText[0])
+            append("*****")
+            append(lowercaseText.substring(lowercaseText.indexOf('@') - 1, lowercaseText.length))
+        }
+    } else if (isPhoneNumberFormat(s)) {
+        ""
+    } else {
+        ""
+    }
+}
+
+private fun isEmailFormat(s: String): Boolean {
+    return s[0].isLetter()
+}
+
+private fun isPhoneNumberFormat(s: String): Boolean {
+    return s[0].isDigit()
+}
+
+private fun maskEmail(email: String, builder: StringBuilder): String {
+    val emailLower = email.toLowerCase()
+
+    val annotationIndex = emailLower.indexOf("@")
+
+    builder.append(emailLower.first())
+    builder.append("*****")
+    builder.append(emailLower.substring(annotationIndex - 1))
+
+    return builder.toString()
+}
+
+private fun maskPhoneNumber(phoneNumber: String, builder: StringBuilder): String {
+
+    for (number in phoneNumber) {
+        if (Character.isDigit(number)) {
+            builder.append(number)
+        }
+    }
+
+    // check whether there is a international code number from the string
+    val internationalNumber = builder.length - 10
+
+    val maskingNumber = "***-***-${builder.substring(builder.length - 4)}"
+    if (internationalNumber == 0) {
+        return maskingNumber
+    } else {
+        var prefixNumber = "+"
+        for (count in 0 until internationalNumber) {
+            prefixNumber += "*"
+        }
+
+        return "$prefixNumber-$maskingNumber"
+    }
+}
+
+private fun chunkKeyFromEnd(key: String, k: Int): List<String> {
+    var temp = key
+    //25G3J
+    val stack = ArrayDeque<String>()
+    val lastSubstringIdx = key.length - 1
+
+    for (lastIdx in lastSubstringIdx downTo k) {
+        if (temp.length < k) break
+        val subs = key.substring(lastIdx - k, lastIdx)
+        println("subs -> $subs from temp $temp")
+        temp = temp.removeRange(lastIdx - k, lastIdx)
+        stack.add(subs)
+        println(temp)
+    }
+
+    if (temp.isNotEmpty()) {
+        stack.add(temp)
+    }
+
+    return stack.toList().reversed()
+}
+
+fun removeKdigits(num: String, k: Int): String {
+    if (num.length < k) return "0"
+
+    var min = 0
+    var lastIndex = num.length - 1
+
+    for (idx in num.indices) {
+        val removedNumber = num.removeRange(idx, idx)
+    }
+
+    return "$min"
 }
 
 fun wordBreak(s: String, wordDict: List<String>?): Boolean {
@@ -27,7 +642,7 @@ fun minDeletions(s: String): Int {
     var counter = 0
     val map = mutableMapOf<Char, Int>()
 
-    for(char in s){
+    for (char in s) {
         map[char] = map.getOrDefault(char, 0) + 1
     }
 
@@ -38,9 +653,9 @@ fun minDeletions(s: String): Int {
     map.toSortedMap()
     val seen = hashSetOf<Char>()
 
-    for((key, value) in map) {
+    for ((key, value) in map) {
         println("$key $value")
-        if(seen.contains(key)) {
+        if (seen.contains(key)) {
             map[key] = value - 1
             counter++
         } else {
@@ -54,10 +669,10 @@ fun minDeletions(s: String): Int {
 fun mergeKLists(lists: Array<ListNode?>): ListNode? {
     val heap = PriorityQueue<Int>()
 
-    for(node in lists) {
+    for (node in lists) {
         var head = node
-        while(head != null) {
-            heap.add(head?.`val` ?: 0)
+        while (head != null) {
+            heap.add(head.`val`)
             head = head.next
         }
     }
@@ -65,7 +680,7 @@ fun mergeKLists(lists: Array<ListNode?>): ListNode? {
     var dummy = ListNode(0)
     var head = dummy
 
-    while(!heap.isEmpty()) {
+    while (!heap.isEmpty()) {
         val nextNode = ListNode(heap.remove())
         head.next = nextNode
     }
@@ -76,8 +691,7 @@ fun mergeKLists(lists: Array<ListNode?>): ListNode? {
 fun earliestAcq(logs: Array<IntArray>, n: Int): Int {
     val list = IntArray(2)
     Arrays.sort<IntArray>(logs) { a: IntArray, b: IntArray -> a[0] - b[0] }
-    val groups = hashSetOf<Int>()
-    /*
+    val groups = hashSetOf<Int>()/*
     [20190101,0,1],
     [20190104,3,4],
     [20190107,2,3],
@@ -117,8 +731,7 @@ fun lcsHelper(i: Int, j: Int, str1: String, str2: String, count: Int): Int {
         1 + lcsHelper(i + 1, j + 1, str1, str2, count)
     } else {
         Math.max(
-            lcsHelper(i + 1, j, str1, str2, count),
-            lcsHelper(i, j + 1, str1, str2, count)
+            lcsHelper(i + 1, j, str1, str2, count), lcsHelper(i, j + 1, str1, str2, count)
         )
     }
 }
@@ -136,9 +749,11 @@ fun countPoints(rings: String): Int {
             'R' -> {
                 red[position] = true
             }
+
             'G' -> {
                 green[position] = true
             }
+
             'B' -> {
                 blue[position] = true
             }
@@ -275,8 +890,7 @@ private fun initBuild(size: Int, list: MutableList<Boolean>) {
     }
 }
 
-fun medianSlidingWindow(nums: IntArray, k: Int): DoubleArray {
-    /*
+fun medianSlidingWindow(nums: IntArray, k: Int): DoubleArray {/*
     Input: nums = [1,3,-1,-3,5,3,6,7], k = 3
     Output: [1.00000,-1.00000,-1.00000,3.00000,5.00000,6.00000]
     Explanation:
@@ -410,8 +1024,7 @@ fun mergeTwoLists(list1: ListNode?, list2: ListNode?): ListNode? {
     return populateLinkedlist
 }
 
-fun maxRepeatedChar(word: String, max: Int): String {
-    /*
+fun maxRepeatedChar(word: String, max: Int): String {/*
     given a string of consecutive repeated characters and max value,
     return another string of max repeated characters : for ex: aaaaabbbbbcccdd and max is 2 should be aabbccdd
      */
@@ -473,21 +1086,7 @@ fun isLongPressedName(name: String, typed: String): Boolean {
     return counter == 0
 }
 
-fun firstMissingPositive(nums: IntArray): Int {
-    nums.sorted()
-    val missingSet = mutableSetOf<Int>()
-
-    for (i in 0 until nums.size) {
-        missingSet.add(nums[i])
-    }
-
-
-
-    return 0
-}
-
-fun anagramMappings(nums1: IntArray, nums2: IntArray): IntArray {
-    /*
+fun anagramMappings(nums1: IntArray, nums2: IntArray): IntArray {/*
     Input: nums1 = [12,28,46,32,50], nums2 = [50,12,32,46,28]
     Output: [1,4,3,2,0]
     Explanation: As mapping[0] = 1 because the 0th element of nums1 appears at nums2[1], and mapping[1] = 4
@@ -513,8 +1112,8 @@ fun rangeSumBST(root: TreeNode?, low: Int, high: Int): Int {
 
 private fun helperRangeSumBST(root: TreeNode?, low: Int, high: Int, current: Int): Int {
     if (root != null) {
-        if (isWithinRange(low, high, root.`val` ?: 0)) {
-            return current + root.`val` ?: 0
+        if (isWithinRange(low, high, root.`val`)) {
+            return current + root.`val`
         }
         helperRangeSumBST(root.left, low, high, current)
         helperRangeSumBST(root.right, low, high, current)
@@ -527,8 +1126,7 @@ private fun isWithinRange(low: Int, high: Int, target: Int): Boolean {
     return target in low..high
 }
 
-fun removeDuplicates(s: String, k: Int): String {
-    /*
+fun removeDuplicates(s: String, k: Int): String {/*
     Input: s = "deeedbbcccbdaa", k = 3
     Output: "aa"
     Explanation:
@@ -584,8 +1182,7 @@ fun longestConsecutive(nums: IntArray): Int {
     return Math.max(longest, counter)
 }
 
-fun wallsAndGates(rooms: Array<IntArray>): Unit {
-    /*
+fun wallsAndGates(rooms: Array<IntArray>): Unit {/*
     Input: rooms = [
     [2147483647,    -1,          0,         2147483647],
     [2147483647,    2147483647, 2147483647, -1],
@@ -607,8 +1204,7 @@ private fun wallsAndGatesDfs(rooms: Array<IntArray>) {
 }
 
 fun findAnagrams(s: String, p: String): List<Int> {
-    val sorted = p.toCharArray()
-        .sorted().joinToString("")
+    val sorted = p.toCharArray().sorted().joinToString("")
 
     var first = 0
     val indexs = mutableListOf<Int>()
@@ -631,12 +1227,10 @@ fun findAnagrams(s: String, p: String): List<Int> {
 }
 
 private fun isFindAnagramValid(str1: String, str2: String): Boolean {
-    return str1 == str2.toCharArray()
-        .sorted().joinToString("")
+    return str1 == str2.toCharArray().sorted().joinToString("")
 }
 
-fun groupAnagrams(strs: Array<String>): List<List<String>> {
-    /*
+fun groupAnagrams(strs: Array<String>): List<List<String>> {/*
     Input: strs = ["eat","tea","tan","ate","nat","bat"]
     Output: [["bat"],["nat","tan"],["ate","eat","tea"]]
      */
@@ -662,9 +1256,7 @@ fun groupAnagrams(strs: Array<String>): List<List<String>> {
 }
 
 private fun sortedWord(str: String): String {
-    return str.toCharArray()
-        .sorted()
-        .joinToString("")
+    return str.toCharArray().sorted().joinToString("")
 }
 
 fun lengthOfLongestSubstring(s: String): Int {
@@ -700,8 +1292,7 @@ private fun hasRepeatingChar(s: String): Boolean {
     return false
 }
 
-fun balanceBracket(bracket: String): Boolean {
-    /*
+fun balanceBracket(bracket: String): Boolean {/*
     Write a function to check that a String is parenthetically balanced.
 For example:
   - "(bar)" - balanced
@@ -842,19 +1433,37 @@ fun restoreString(s: String, indices: IntArray): String {
 }
 
 fun exist(board: Array<CharArray>, word: String): Boolean {
-    var occurance = word
-    var idx = 0
+    val flattenBoard = board.flatMap { it.toList() }
+    val map = mutableMapOf<Char, Int>()
 
-    board.forEach { row ->
-        for (letter in row) {
-            if (letter == occurance[idx]) {
-                idx++
-                occurance = occurance.substring(idx, occurance.length)
+    for (char in word) {
+        map[char] = map.getOrDefault(char, 0) + 1
+    }
+
+    flattenBoard.forEach { char ->
+        if (map.containsKey(char)) {
+            if (map.getOrDefault(char, 0) > 0) {
+                map[char] = map.getOrDefault(char, 0) - 1
+            }
+
+            if (map[char] == 0) {
+                map.remove(char)
             }
         }
     }
 
-    return occurance.isEmpty()
+    return map.isEmpty()
+}
+
+//for above function
+private fun chunkWord(word: String): ArrayDeque<Char> {
+    val deque = ArrayDeque<Char>()
+
+    for (char in word) {
+        deque.offerFirst(char)
+    }
+
+    return deque
 }
 
 fun reverseString(s: CharArray): Unit {
@@ -1016,8 +1625,7 @@ fun deliManipulation(n: String): String {
     return builder.toString()
 }
 
-fun maxValue(n: String, x: Int): String {
-    /*
+fun maxValue(n: String, x: Int): String {/*
         n = "99",
         x = 9
 
@@ -1058,8 +1666,7 @@ fun maxValue(n: String, x: Int): String {
 
 fun helperMaxValue(n: String, x: Int): String {
     var current = n.toList()
-    val list = mutableListOf<Char>()
-        .addAll(current)
+    val list = mutableListOf<Char>().addAll(current)
     var max = 0
 
     for (i in 0 until current.size + 1) {
@@ -1074,8 +1681,7 @@ fun isNegativeValue(n: String): Boolean {
     return n[0] == '-'
 }
 
-fun buyStock(list: IntArray): List<Int> {
-    /*
+fun buyStock(list: IntArray): List<Int> {/*
     [7,1,5,3,6,4]
      */
 
@@ -1093,8 +1699,7 @@ fun buyStock(list: IntArray): List<Int> {
     return result.takeLast(2)
 }
 
-fun reverseStringWithChar(s: String, symbols: String): String {
-    /*
+fun reverseStringWithChar(s: String, symbols: String): String {/*
     for example the text is: deliveryhero
     the output: o*r*e*h*y*r*e*v*i*l*e*d
      */
@@ -1109,8 +1714,7 @@ fun reverseStringWithChar(s: String, symbols: String): String {
     return builder.toString()
 }
 
-fun reverseStringWithCharEveryPos(s: String, symbols: String, position: Int): String {
-    /*
+fun reverseStringWithCharEveryPos(s: String, symbols: String, position: Int): String {/*
     for example the text is: deliveryhero
     the output: o*r*e*h*y*r*e*v*i*l*e*d
      */
@@ -1197,9 +1801,9 @@ private fun helper(root: TreeNode?, list: MutableList<Int>) {
         return
     }
 
-    helper(root?.left, list)
+    helper(root.left, list)
     list.add(root.`val`)
-    helper(root?.right, list)
+    helper(root.right, list)
 }
 
 fun removeDuplicates(s: String): String {
@@ -1325,8 +1929,7 @@ fun third(A: IntArray): Int {
     }
 }
 
-fun missingElement(nums: IntArray, k: Int): Int {
-    /*
+fun missingElement(nums: IntArray, k: Int): Int {/*
     Input: nums = [4,7,9,10], k = 1
     Output: 5
     Explanation: The first missing number is 5.
@@ -1363,18 +1966,16 @@ fun frequencySort(s: String): String {
         map[char] = map.getOrDefault(char, 0) + 1
     }
 
-    map.toSortedMap(Comparator.reverseOrder())
-        .forEach { t, u ->
-            repeat(u) {
-                builder.append("$t")
-            }
+    map.toSortedMap(Comparator.reverseOrder()).forEach { t, u ->
+        repeat(u) {
+            builder.append("$t")
         }
+    }
 
     return builder.toString()
 }
 
-fun validWordAbbreviation(word: String, abbr: String): Boolean {
-    /*
+fun validWordAbbreviation(word: String, abbr: String): Boolean {/*
     s10n ; word = substitution
     we have first text as s and will take 10 characters from the word that start after the s
     which mean will start from 2nd char until the number
@@ -1397,8 +1998,7 @@ fun validWordAbbreviation(word: String, abbr: String): Boolean {
     return stringBuilder.toString() == word
 }
 
-fun uncommonFromSentences(s1: String, s2: String): Array<String> {
-    /*
+fun uncommonFromSentences(s1: String, s2: String): Array<String> {/*
     s1 = "this apple is sweet",
     s2 = "this apple is sour"
     output = ["sweet","sour"]
@@ -1482,8 +2082,7 @@ fun isPowerOfTwo(n: Int): Boolean {
     return false
 }
 
-fun commonChars(words: Array<String>): List<String> {
-    /*
+fun commonChars(words: Array<String>): List<String> {/*
     ["bella","label","roller"]
     output = ["e","l","l"]
 
@@ -1561,9 +2160,7 @@ fun longestValidParentheses(s: String): Int {
     var count = 0
 
     val bracketMap = mutableMapOf(
-        '(' to ')',
-        '[' to ']',
-        '{' to '}'
+        '(' to ')', '[' to ']', '{' to '}'
     )
     val stack = ArrayDeque<Char>()
     for (bracket in s) {
@@ -1608,15 +2205,8 @@ private val list = listOf<RomanValue>(
 fun romanToInt(roman: String): Int {
 
     val mapOfRoman = mapOf(
-        'M' to 1000,
-        'D' to 500,
-        'C' to 100,
-        'L' to 50,
-        'X' to 10,
-        'V' to 5,
-        'I' to 1
-    )
-    /*
+        'M' to 1000, 'D' to 500, 'C' to 100, 'L' to 50, 'X' to 10, 'V' to 5, 'I' to 1
+    )/*
     IV = 4
     XL = 40
      */
@@ -1710,12 +2300,9 @@ fun topKFrequent(words: Array<String>, k: Int): List<String> {
         frequentMap[word] = frequentMap.getOrDefault(word, 0) + 1
     }
 
-    val sortedMap = frequentMap.toList()
-        .sortedByDescending { (key, value) -> key }
-        .sortedBy { (key, value) -> value }
-        .takeLast(k)
-        .reversed()
-        .toMap()
+    val sortedMap =
+        frequentMap.toList().sortedByDescending { (key, value) -> key }.sortedBy { (key, value) -> value }.takeLast(k)
+            .reversed().toMap()
 
     for ((key, value) in sortedMap) {
         result.add(key)
@@ -1789,9 +2376,7 @@ fun spiralOrder(matrix: Array<IntArray>): List<Int> {
 }
 
 data class VisitedWebsite(
-    val username: String,
-    val timestamp: Int,
-    val website: String
+    val username: String, val timestamp: Int, val website: String
 )
 
 fun maxNumberOfBalloons(text: String): Int {
@@ -1881,8 +2466,7 @@ fun sortedSquares(nums: IntArray): IntArray {
     return nums
 }
 
-fun majorityElement(nums: IntArray): List<Int> {
-    /*
+fun majorityElement(nums: IntArray): List<Int> {/*
     Input: nums = [3,2,3]
     Output: [3]
 
@@ -1905,8 +2489,7 @@ fun majorityElement(nums: IntArray): List<Int> {
     return result
 }
 
-fun findAndReplacePattern(words: Array<String>, pattern: String): List<String> {
-    /*
+fun findAndReplacePattern(words: Array<String>, pattern: String): List<String> {/*
     Input: words = ["abc","deq","mee","aqq","dkd","ccc"], pattern = "abb"
     Output: ["mee","aqq"]
     Explanation: "mee" matches the pattern because there is a permutation {a -> m, b -> e, ...}.
@@ -1938,8 +2521,7 @@ private fun isMatchPattern(s: String, patternMap: MutableMap<Char, Int>): Boolea
 }
 
 
-fun convertToTitle(columnNumber: Int): String {
-    /*
+fun convertToTitle(columnNumber: Int): String {/*
     Input: columnNumber = 1
     Output: "A"
 
@@ -2061,9 +2643,11 @@ fun globMatching(fileName: String, pattern: String): Boolean {
             '*' -> {
 
             }
+
             '?' -> {
                 matching.pop()
             }
+
             else -> {
                 if (pattern[i] == matching.peekFirst()) {
                     matching.pop()
@@ -2076,8 +2660,7 @@ fun globMatching(fileName: String, pattern: String): Boolean {
 }
 
 
-fun minimumCharactersForWords(words: List<String>): List<Char> {
-    /*
+fun minimumCharactersForWords(words: List<String>): List<Char> {/*
     words = ["this", "that", "did", "deed", "them!", "a"]
     this => t,h,i,s (t = 1, h=1, i=1, s=1)
     that => t,h,a,t (t = 2, h = 1, a=1)
@@ -2183,8 +2766,7 @@ fun plusOne(digits: IntArray): IntArray {
     return arr
 }
 
-fun moveElementToEnd(array: MutableList<Int>, toMove: Int): List<Int> {
-    /*
+fun moveElementToEnd(array: MutableList<Int>, toMove: Int): List<Int> {/*
     input = [2,1,2,2,2,3,4,2]
     move = 2
 
@@ -2246,21 +2828,12 @@ fun letterCombinations(digits: String): List<String> {
      */
 
     val keyword = mutableMapOf<Char, String>(
-        '2' to "abc",
-        '3' to "def",
-        '4' to "ghi",
-        '5' to "jkl",
-        '6' to "mno",
-        '7' to "pqrs",
-        '8' to "tuv",
-        '9' to "wxyz"
+        '2' to "abc", '3' to "def", '4' to "ghi", '5' to "jkl", '6' to "mno", '7' to "pqrs", '8' to "tuv", '9' to "wxyz"
     )
     val combination = mutableSetOf<String>()
     digits.forEach { digit ->
         combine(
-            keyword.getOrDefault('2', ""),
-            keyword.getOrDefault('3', ""),
-            combination
+            keyword.getOrDefault('2', ""), keyword.getOrDefault('3', ""), combination
         )
     }
     return combination.toMutableList()
@@ -2307,8 +2880,7 @@ fun missingNumber(nums: IntArray): Int {
     return -1
 }
 
-fun numIslands(grid: Array<CharArray>): Int {
-    /*
+fun numIslands(grid: Array<CharArray>): Int {/*
     Input: grid = [
       ["1","1","1","1","0"],
       ["1","1","0","1","0"],
@@ -2361,8 +2933,7 @@ private fun dfs(grid: Array<CharArray>, r: Int, c: Int) {
     dfs(grid, r, c + 1)
 }
 
-fun lengthLongestPath(input: String): Int {
-    /*
+fun lengthLongestPath(input: String): Int {/*
     Input: input = "dir\n\tsubdir1\n\t\tfile1.ext\n\t\tsubsubdir1\n\tsubdir2\n\t\tsubsubdir2\n\t\t\tfile2.ext"
     Output: 32
     Explanation: We have two files:
@@ -2370,11 +2941,21 @@ fun lengthLongestPath(input: String): Int {
     "dir/subdir2/subsubdir2/file2.ext" of length 32.
     We return 32 since it is the longest absolute path to a file.
      */
-    return 0
+
+    var directory = ""
+
+    var left = 0
+    var right = left + 1
+
+
+    while (right < input.length) {
+
+    }
+
+    return directory.length
 }
 
-fun canConvert(str1: String, str2: String): Boolean {
-    /*
+fun canConvert(str1: String, str2: String): Boolean {/*
     Input: str1 = "aabcc", str2 = "ccdee"
     Output: true
     Explanation: Convert 'c' to 'e' then 'b' to 'd' then 'a' to 'c'. Note that the order of conversions matter.
@@ -2414,8 +2995,7 @@ fun calculateII(s: String): Int {
     return result
 }
 
-fun accountsMerge(accounts: List<List<String>>): List<List<String>> {
-    /*
+fun accountsMerge(accounts: List<List<String>>): List<List<String>> {/*
     Input: accounts = [
     ["John","johnsmith@mail.com","john_newyork@mail.com"],
     ["John","johnsmith@mail.com","john00@mail.com"],
@@ -2466,8 +3046,7 @@ fun searchRange(nums: IntArray, target: Int): IntArray {
     return intArrayOf(nums.indexOfFirst { it == target }, nums.lastIndexOf(target))
 }
 
-fun simplifyPath(path: String): String {
-    /*
+fun simplifyPath(path: String): String {/*
     Input: path = "/home/"
     Output: "/home"
     Explanation: Note that there is no trailing slash after the last directory name.
@@ -2496,8 +3075,7 @@ fun simplifyPath(path: String): String {
     return if (finalPath.isNotEmpty()) finalPath.toString() else "/"
 }
 
-fun minRemoveToMakeValid(s: String): String {
-    /*
+fun minRemoveToMakeValid(s: String): String {/*
     Input: s = "a)b(c)d"
     Output: "ab(c)d"
 
@@ -2505,9 +3083,7 @@ fun minRemoveToMakeValid(s: String): String {
     Output: "a(b(c)d)"
      */
     val bracketMap = mutableMapOf(
-        '(' to ')',
-        '[' to ']',
-        '{' to '}'
+        '(' to ')', '[' to ']', '{' to '}'
     )
     val stack = ArrayDeque<Int>()
 
@@ -2520,9 +3096,7 @@ fun minRemoveToMakeValid(s: String): String {
 
 fun minAddToMakeValid(s: String): Int {
     val bracketMap = mutableMapOf(
-        '(' to ')',
-        '[' to ']',
-        '{' to '}'
+        '(' to ')', '[' to ']', '{' to '}'
     )
     val stack = ArrayDeque<Char>()
     for (bracket in s) {
@@ -2543,9 +3117,7 @@ fun isValid(s: String): Boolean {
      */
 
     val bracketMap = mutableMapOf(
-        '(' to ')',
-        '[' to ']',
-        '{' to '}'
+        '(' to ')', '[' to ']', '{' to '}'
     )
     val stack = ArrayDeque<Char>()
     for (bracket in s) {
@@ -2559,11 +3131,10 @@ fun isValid(s: String): Boolean {
     return stack.isEmpty()
 }
 
-fun removeDuplicateLetters(s: String): String {
-/*
-Input: s = "cbacdcbc"
-    Output: "acdb"
- */
+fun removeDuplicateLetters(s: String): String {/*
+    Input: s = "cbacdcbc"
+        Output: "acdb"
+     */
 
     val duplicate = mutableListOf<Char>()
     val seen = mutableSetOf<Char>()
@@ -2575,8 +3146,7 @@ Input: s = "cbacdcbc"
         }
     }
 
-    return seen.sorted()
-        .joinToString("")
+    return seen.sorted().joinToString("")
 }
 
 fun findDuplicates(nums: IntArray): List<Int> {
@@ -2614,8 +3184,7 @@ fun maxValues(n: String, x: Int): String {
     return if (isNegative) "-" else ""
 }
 
-fun expressiveWords(s: String, words: Array<String>): Int {
-    /*
+fun expressiveWords(s: String, words: Array<String>): Int {/*
     Input: s = "heeellooo", words = ["hello", "hi", "helo"]
     Output: 1
     Explanation:
@@ -2664,9 +3233,7 @@ fun moveZeroes(nums: IntArray): Unit {
 
 fun balancedBrackets(str: String): Boolean {
     val map = mutableMapOf<Char, Char>(
-        '(' to ')',
-        '[' to ']',
-        '{' to '}'
+        '(' to ')', '[' to ']', '{' to '}'
     )
     val deque = ArrayDeque<Char>()
 
@@ -2680,8 +3247,7 @@ fun balancedBrackets(str: String): Boolean {
     return deque.isEmpty()
 }
 
-fun intersection(nums1: IntArray, nums2: IntArray): IntArray {
-    /*
+fun intersection(nums1: IntArray, nums2: IntArray): IntArray {/*
     Input: nums1 = [4,9,5], nums2 = [9,4,9,8,4]
     Output: [9,4]
     Explanation: [4,9] is also accepted.
@@ -2705,8 +3271,7 @@ fun intersection(nums1: IntArray, nums2: IntArray): IntArray {
     return result.toIntArray()
 }
 
-fun intersectionII(nums1: IntArray, nums2: IntArray): IntArray {
-    /*
+fun intersectionII(nums1: IntArray, nums2: IntArray): IntArray {/*
     Input: nums1 = [4,9,5], nums2 = [9,4,9,8,4]
     Output: [9,4]
     Explanation: [4,9] is also accepted.
@@ -2732,8 +3297,7 @@ fun intersectionII(nums1: IntArray, nums2: IntArray): IntArray {
 
 fun isAnagram(s: String, t: String): Boolean {
     return Arrays.equals(
-        s.chars().sorted().toArray(),
-        t.chars().sorted().toArray()
+        s.chars().sorted().toArray(), t.chars().sorted().toArray()
     )
 }
 
@@ -2788,9 +3352,7 @@ fun twoSum2(nums: IntArray, target: Int): IntArray {
 }
 
 fun mostCommonWord(paragraph: String, banned: Array<String>): String {
-    val words = paragraph.toLowerCase()
-        .splitToSequence(" ")
-        .toList()
+    val words = paragraph.toLowerCase().splitToSequence(" ").toList()
 
 
     return ""
@@ -2839,11 +3401,7 @@ fun filterRestaurants(restaurants: Array<IntArray>, veganFriendly: Int, maxPrice
 
 
 data class Restaurant(
-    val id: Int,
-    val rating: Int,
-    val veganFriendly: Int,
-    val price: Int,
-    val distance: Int
+    val id: Int, val rating: Int, val veganFriendly: Int, val price: Int, val distance: Int
 )
 
 fun fizzBuzz(n: Int): List<String> {
@@ -2867,8 +3425,7 @@ fun fizzBuzz(n: Int): List<String> {
     return solutions
 }
 
-fun encode(num: Int): String {
-    /*
+fun encode(num: Int): String {/*
 
     Assume g(n) = "1" + f(n)
     we can find:
@@ -2938,9 +3495,7 @@ fun reverseWords(s: String): String {
 }
 
 fun isPalindrome(s: String): Boolean {
-    val sentence = s.toLowerCase()
-        .replace(" ", "")
-        .replace(Regex("[^A-Za-z0-9 ]"), "")
+    val sentence = s.toLowerCase().replace(" ", "").replace(Regex("[^A-Za-z0-9 ]"), "")
     return sentence == sentence.reversed()
 }
 
@@ -3043,21 +3598,18 @@ fun twoSum(nums: IntArray, target: Int): IntArray {
 }
 
 fun licenseKeyFormatting(s: String, k: Int): String {
-    val fistGroup = s.substringBefore("-")
-    val secondGroup = s.substringAfter("-")
-        .replace("-", "")
-    val builder = StringBuilder()
+    val trimmedKey = s.replace("-", "").toUpperCase()
+    val chunkedKey = trimmedKey.chunked(k)
+    val keyFormatting = StringBuilder()
 
-    builder.apply {
-        append(fistGroup.toUpperCase())
-        append("-")
+    chunkedKey.forEachIndexed { index, key ->
+        keyFormatting.append(key)
+        if (index != chunkedKey.lastIndex) {
+            keyFormatting.append("-")
+        }
     }
 
-    var second = ""
-    for (i in 0 until secondGroup.length) {
-    }
-
-    return builder.toString()
+    return keyFormatting.toString().reversed()
 }
 
 fun multiply(num1: String, num2: String): String {

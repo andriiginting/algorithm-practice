@@ -1,7 +1,7 @@
 package leetcode
 
 class ParkingSystem(big: Int, medium: Int, small: Int) {
-    val map = mutableMapOf<Int, Int>(
+    val map = mutableMapOf(
         1 to big,
         2 to medium,
         3 to small

@@ -1,34 +1,77 @@
-class Twitter() {
+class Twitter {
 
-    /** Initialize your data structure here. */
-    private val followers = mutableMapOf<Int, Int>()
-    private val feeds = mutableMapOf<Int, List<Int>>()
+    private val userToTweets = mutableListOf<Pair<Int, Int>>()
 
-    //userId as key and tweetId as value
-    private val tweet = mutableMapOf<Int, Int>()
+    // userId to followers
+    private val userToMapFriends = mutableMapOf<Int, MutableList<Int>>()
 
-    /** Compose a new tweet. */
     fun postTweet(userId: Int, tweetId: Int) {
-        tweet[userId] = tweetId
+        userToTweets.add(userId to tweetId)
     }
 
-    /** Retrieve the 10 most recent tweet ids in the user's news feed. Each item in the news feed must be posted by users who the user followed or by the user herself. Tweets must be ordered from most recent to least recent. */
     fun getNewsFeed(userId: Int): List<Int> {
-        return emptyList()
+        return userToTweets.filter { tweets ->
+            userToMapFriends[userId]?.contains(tweets.first) == true || tweets.first == userId
+        }.map {
+            it.second
+        }.takeLast(10)
+            .reversed()
     }
 
-    /** Follower follows a followee. If the operation is invalid, it should be a no-op. */
+    /**
+     * The user with ID followerId started following the user with ID followeeId.
+     */
     fun follow(followerId: Int, followeeId: Int) {
-        followers[followeeId] = followerId
+        userToMapFriends[followerId]?.add(followeeId) ?: run {
+            userToMapFriends[followerId] = mutableListOf()
+            userToMapFriends[followerId]?.add(followeeId)
+        }
     }
 
-    /** Follower unfollows a followee. If the operation is invalid, it should be a no-op. */
     fun unfollow(followerId: Int, followeeId: Int) {
-        followers.remove(followeeId, followerId)
+        userToMapFriends[followerId]?.remove(followeeId)
     }
-
 }
 
 fun main() {
     val twitter = Twitter()
+
+    //postTweet [1,5]
+    twitter.postTweet(1, 5)
+
+    //follow [1,2]
+    twitter.follow(1, 2)
+
+    //follow [2,1]
+    twitter.follow(2, 1)
+
+    //getNewsFeed 2
+    twitter.getNewsFeed(2)
+
+    //postTweet 2,6
+    twitter.postTweet(2, 6)
+
+    // getNewsFeed 1
+    twitter.getNewsFeed(1)
+
+    //getNewsFeed 2
+    twitter.getNewsFeed(2)
+
+    //unfollow 2, 1
+    twitter.unfollow(2, 1)
+
+    //getNewsFeed 1
+    twitter.getNewsFeed(1)
+
+    //getNewsFeed 2
+    twitter.getNewsFeed(2)
+
+    //unfollow 2, 1
+    twitter.unfollow(1, 2)
+
+    // getNewsFeed 1
+    twitter.getNewsFeed(1)
+
+    //getNewsFeed 2
+    twitter.getNewsFeed(2)
 }

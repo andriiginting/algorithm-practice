@@ -22,11 +22,11 @@ class FoodRatings(private val foods: Array<String>, private val cuisines: Array<
 
 
     private fun initFoodRatings() {
-        for(i in 0 until foods.size) {
+        for(i in foods.indices) {
             foodRatingMap[foods[i]] = ratings[i]
         }
 
-        for(i in 0 until cuisines.size) {
+        for(i in cuisines.indices) {
             foodCuisineMap[cuisines[i]] = foodCuisineMap.getOrDefault(foods[i], mutableListOf()).apply { add(foods[i]) }
         }
     }
